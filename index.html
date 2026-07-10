@@ -12,20 +12,35 @@
         <div class="logo">💡 Keep Clone</div>
     </header>
 
-    <!-- Form Input Catatan (Mirip Kotak di Google Keep) -->
-    <div class="form-container">
-        <div class="note-form">
-            <input type="text" id="note-title" placeholder="Judul">
-            <textarea id="note-content" placeholder="Buat catatan..."></textarea>
-            <div class="form-footer">
-                <button id="add-note-btn">Simpan</button>
-            </div>
-        </div>
-    </div>
+    <!-- Bungkus Utama Aplikasi (Sidebar + Konten) -->
+    <div class="app-layout">
+        
+        <!-- Sidebar Kiri (Menu Tambahan) -->
+        <aside class="sidebar">
+            <div class="menu-item active">Catatan</div>
+            <div class="menu-item">Pengingat</div>
+            <div class="menu-item">Edit label</div>
+            <div class="menu-item">Arsipkan</div>
+            <div class="menu-item">Sampah</div>
+        </aside>
 
-    <!-- Area Grid Catatan (Tempat catatan berjejer seperti di foto) -->
-    <div class="main-content">
-        <div id="notes-container"></div>
+        <!-- Area Konten Utama (Form + Grid Catatan) -->
+        <main class="main-content">
+            <!-- Form Input Catatan -->
+            <div class="form-container">
+                <div class="note-form">
+                    <input type="text" id="note-title" placeholder="Judul">
+                    <textarea id="note-content" placeholder="Buat catatan..."></textarea>
+                    <div class="form-footer">
+                        <button id="add-note-btn">Simpan</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Wadah Grid Catatan -->
+            <div id="notes-container"></div>
+        </main>
+
     </div>
 
     <script src="app.js"></script>
