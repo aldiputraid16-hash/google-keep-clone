@@ -1,0 +1,1 @@
+console.log("Aplikasi Google Keep siap dijalankan!");
