@@ -11,7 +11,7 @@ const noteContentInput = document.getElementById('note-content');
 const addNoteBtn = document.getElementById('add-note-btn');
 const notesContainer = document.getElementById('notes-container');
 
-// 3. Fungsi untuk Menampilkan Catatan (READ)
+// 3. Fungsi untuk Menampilkan Catatan (READ) + Tombol Hapus
 function renderNotes() {
     notesContainer.innerHTML = ''; // Kosongkan container sebelum render ulang
     
@@ -21,6 +21,7 @@ function renderNotes() {
         noteCard.innerHTML = `
             <h3>${note.title || '(Tanpa Judul)'}</h3>
             <p>${note.content}</p>
+            <button class="delete-btn" onclick="deleteNote(${note.id})">Hapus</button>
         `;
         notesContainer.appendChild(noteCard);
     });
@@ -31,27 +32,33 @@ addNoteBtn.addEventListener('click', () => {
     const title = noteTitleInput.value.trim();
     const content = noteContentInput.value.trim();
 
-    // Validasi agar tidak bisa input catatan kosong
     if (content === '') {
         alert('Isi catatan tidak boleh kosong!');
         return;
     }
 
-    // Format objek catatan baru
     const newNote = {
-        id: Date.now(), // ID unik menggunakan timestamp waktu saat ini
+        id: Date.now(), // ID unik berupa timestamp
         title: title,
         content: content
     };
 
-    notes.push(newNote); // Masukkan ke array lokal
-    saveToMockDB();      // Simpan perubahan ke Mock DB (localStorage)
-    renderNotes();       // Tampilkan ulang ke layar
+    notes.push(newNote);
+    saveToMockDB();
+    renderNotes();
 
-    // Kosongkan kembali form input setelah ditambahkan
     noteTitleInput.value = '';
     noteContentInput.value = '';
 });
 
-// Panggil fungsi render saat pertama kali web dibuka agar catatan lama muncul
+// 5. Fungsi untuk Menghapus Catatan (DELETE)
+window.deleteNote = function(id) {
+    // Memfilter array: ambil semua catatan KECUALI yang ID-nya cocok dengan yang dihapus
+    notes = notes.filter(note => note.id !== id);
+    
+    saveToMockDB(); // Simpan perubahan ke Mock DB
+    renderNotes();  // Render ulang tampilan agar catatan hilang dari layar
+}
+
+// Jalankan fungsi render saat pertama kali web dibuka
 renderNotes();
