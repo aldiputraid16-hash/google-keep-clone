@@ -7,15 +7,26 @@
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <h1>Google Keep Clone</h1>
-    
-    <div class="note-form">
-        <input type="text" id="note-title" placeholder="Judul Catatan...">
-        <textarea id="note-content" placeholder="Tulis catatan Anda di sini..."></textarea>
-        <button id="add-note-btn">Tambah Catatan</button>
+    <!-- Header Atas -->
+    <header class="navbar">
+        <div class="logo">💡 Keep Clone</div>
+    </header>
+
+    <!-- Form Input Catatan (Mirip Kotak di Google Keep) -->
+    <div class="form-container">
+        <div class="note-form">
+            <input type="text" id="note-title" placeholder="Judul">
+            <textarea id="note-content" placeholder="Buat catatan..."></textarea>
+            <div class="form-footer">
+                <button id="add-note-btn">Simpan</button>
+            </div>
+        </div>
     </div>
 
-    <div id="notes-container"></div>
+    <!-- Area Grid Catatan (Tempat catatan berjejer seperti di foto) -->
+    <div class="main-content">
+        <div id="notes-container"></div>
+    </div>
 
     <script src="app.js"></script>
 </body>
