@@ -7,8 +7,16 @@
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <h1>Google Keep Clone (Mock DB)</h1>
-    <div id="app"></div>
+    <h1>Google Keep Clone</h1>
+    
+    <div class="note-form">
+        <input type="text" id="note-title" placeholder="Judul Catatan...">
+        <textarea id="note-content" placeholder="Tulis catatan Anda di sini..."></textarea>
+        <button id="add-note-btn">Tambah Catatan</button>
+    </div>
+
+    <div id="notes-container"></div>
+
     <script src="app.js"></script>
 </body>
 </html>
