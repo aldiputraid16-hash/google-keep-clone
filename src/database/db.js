@@ -15,9 +15,9 @@ const pool = mysql.createPool({
 // Fitur otomatis untuk mengecek apakah server backend bisa terhubung ke Laragon
 pool.getConnection((err, connection) => {
     if (err) {
-        console.error('❌ Koneksi ke MySQL Laragon GAGAL:', err.message);
+        console.error('Koneksi ke MySQL Laragon GAGAL:', err.message);
     } else {
-        console.log('✅ Koneksi ke MySQL Laragon BERHASIL disambungkan!');
+        console.log('Koneksi ke MySQL Laragon BERHASIL disambungkan!');
         connection.release(); // Kembalikan koneksi ke pool
     }
 });
