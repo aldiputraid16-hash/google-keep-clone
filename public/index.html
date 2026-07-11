@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Google Keep Clone - UAS</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <!-- Header Atas -->
+    <header class="navbar">
+        <div class="logo">💡 Keep Clone</div>
+    </header>
+
+    <!-- Bungkus Utama Aplikasi (Sidebar + Konten) -->
+    <div class="app-layout">
+        
+        <!-- Sidebar Kiri (Menu Tambahan) -->
+        <aside class="sidebar">
+            <div class="menu-item active">Catatan</div>
+            <div class="menu-item">Pengingat</div>
+            <div class="menu-item">Edit label</div>
+            <div class="menu-item">Arsipkan</div>
+            <div class="menu-item">Sampah</div>
+        </aside>
+
+        <!-- Area Konten Utama (Form + Grid Catatan) -->
+        <main class="main-content">
+            <!-- Form Input Catatan -->
+            <div class="form-container">
+                <div class="note-form">
+                    <input type="text" id="note-title" placeholder="Judul">
+                    <textarea id="note-content" placeholder="Buat catatan..."></textarea>
+                    <div class="form-footer">
+                        <button id="add-note-btn">Simpan</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Wadah Grid Catatan -->
+            <div id="notes-container"></div>
+        </main>
+
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
