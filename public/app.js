@@ -14,7 +14,7 @@ async function fetchNotes() {
     }
 }
 
-// 2. Fungsi merender data catatan ke HTML
+// 2. Fungsi merender data catatan ke HTML (Sudah ditambahkan tombol Edit)
 function renderNotes(notesList) {
     notesContainer.innerHTML = '';
     
@@ -25,7 +25,10 @@ function renderNotes(notesList) {
         noteCard.innerHTML = `
             <h3>${note.title || 'Tanpa Judul'}</h3>
             <p>${note.content}</p>
-            <button class="delete-btn" onclick="deleteNote(${note.id})">Hapus</button>
+            <div class="note-actions">
+                <button class="edit-btn" onclick="editNote(${note.id}, '${note.title || ''}', '${note.content.replace(/'/g, "\\'")}')">Edit</button>
+                <button class="delete-btn" onclick="deleteNote(${note.id})">Hapus</button>
+            </div>
         `;
         
         notesContainer.appendChild(noteCard);
@@ -49,31 +52,52 @@ async function addNote() {
             body: JSON.stringify({ title, content })
         });
 
-        // Reset input form setelah sukses disimpan
         noteTitle.value = '';
         noteContent.value = '';
-        
-        // Refresh tampilan agar data terbaru dari DB langsung muncul
         fetchNotes(); 
     } catch (error) {
         console.error("Gagal menambah catatan:", error);
     }
 }
 
-// 4. Fungsi menghapus catatan dari MySQL via Backend berdasarkan ID
+// 4. Fungsi mengedit/update catatan via Backend (TAMBAHAN BARU)
+window.editNote = async function(id, currentTitle, currentContent) {
+    const newTitle = prompt("Masukkan judul baru:", currentTitle);
+    if (newTitle === null) return; // Batalkan jika user klik Cancel
+
+    const newContent = prompt("Masukkan isi catatan baru:", currentContent);
+    if (newContent === null) return; // Batalkan jika user klik Cancel
+
+    if (newContent.trim() === "") {
+        alert("Isi catatan tidak boleh kosong!");
+        return;
+    }
+
+    try {
+        await fetch(`/api/notes/${id}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ title: newTitle.trim(), content: newContent.trim() })
+        });
+        fetchNotes(); // Refresh tampilan setelah sukses update
+    } catch (error) {
+        console.error("Gagal mengupdate catatan:", error);
+    }
+};
+
+// 5. Fungsi menghapus catatan dari MySQL via Backend berdasarkan ID
 window.deleteNote = async function(id) {
     if (confirm("Apakah Anda yakin ingin menghapus catatan ini?")) {
         try {
             await fetch(`/api/notes/${id}`, { method: 'DELETE' });
-            fetchNotes(); // Refresh tampilan setelah dihapus
+            fetchNotes(); 
         } catch (error) {
             console.error("Gagal menghapus catatan:", error);
         }
     }
 };
 
-// Pasang event listener pada tombol "Simpan"
 addNoteBtn.addEventListener('click', addNote);
 
-// Jalankan fungsi fetch pertama kali saat web dibuka agar data dari Laragon langsung muncul
+// Jalankan fetch saat pertama kali web dibuka
 fetchNotes();
