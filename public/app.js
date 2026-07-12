@@ -2,13 +2,15 @@ const noteTitle = document.getElementById('note-title');
 const noteContent = document.getElementById('note-content');
 const addNoteBtn = document.getElementById('add-note-btn');
 const notesContainer = document.getElementById('notes-container');
+const searchBar = document.getElementById('search-bar');
+let allNotes = []; 
 
 // 1. Fungsi mengambil data dari MySQL via Backend
 async function fetchNotes() {
     try {
         const response = await fetch('/api/notes');
-        const notes = await response.json();
-        renderNotes(notes);
+        allNotes = await response.json(); 
+        renderNotes(allNotes); 
     } catch (error) {
         console.error("Gagal mengambil data catatan:", error);
     }
@@ -96,6 +98,21 @@ window.deleteNote = async function(id) {
         }
     }
 };
+
+// Fungsi untuk memfilter catatan secara real-time saat user mengetik
+searchBar.addEventListener('input', (e) => {
+    const keyword = e.target.value.toLowerCase();
+    
+    // Filter data dari variabel allNotes yang sudah kita simpan tadi
+    const filteredNotes = allNotes.filter(note => {
+        const titleMatch = (note.title || '').toLowerCase().includes(keyword);
+        const contentMatch = (note.content || '').toLowerCase().includes(keyword);
+        return titleMatch || contentMatch;
+    });
+    
+    // Tampilkan hanya catatan yang cocok dengan kata kunci pencarian
+    renderNotes(filteredNotes);
+});
 
 addNoteBtn.addEventListener('click', addNote);
 
