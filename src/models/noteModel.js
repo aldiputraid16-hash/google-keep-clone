@@ -17,7 +17,17 @@ const Note = {
     // 3. Menghapus catatan berdasarkan ID
     delete: async (id) => {
         await db.query('DELETE FROM notes WHERE id = ?', [id]);
+    },
+// 3. Menghapus catatan berdasarkan ID (kode lama...)
+    delete: async (id) => {
+        await db.query('DELETE FROM notes WHERE id = ?', [id]);
+    }, // <-- Pastikan ada koma di sini sebelum menambah fungsi baru
+
+    // 4. MENGEDIT/UPDATE CATATAN (TAMBAHAN BARU)
+    update: async (id, title, content) => {
+        await db.query('UPDATE notes SET title = ?, content = ? WHERE id = ?', [title, content, id]);
     }
+
 };
 
 module.exports = Note;

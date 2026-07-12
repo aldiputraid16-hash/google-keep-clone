@@ -37,3 +37,20 @@ exports.deleteNote = async (req, res) => {
         res.status(500).json({ error: error.message });
     }
 };
+
+// 4. Menerima data perubahan catatan dari frontend berdasarkan ID (TAMBAHAN BARU)
+exports.updateNote = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { title, content } = req.body;
+
+        if (!content) {
+            return res.status(400).json({ message: "Konten catatan tidak boleh kosong" });
+        }
+
+        await Note.update(id, title, content);
+        res.status(200).json({ message: "Catatan berhasil diperbarui" });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+};

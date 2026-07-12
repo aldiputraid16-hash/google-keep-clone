@@ -11,4 +11,7 @@ router.post('/', noteController.createNote);
 // 3. Endpoint untuk menghapus catatan berdasarkan ID (DELETE /api/notes/:id)
 router.delete('/:id', noteController.deleteNote);
 
+// 4. Endpoint untuk mengupdate catatan berdasarkan ID (PUT /api/notes/:id)
+router.put('/:id', noteController.updateNote);
+
 module.exports = router;
