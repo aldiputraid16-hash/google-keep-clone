@@ -11,37 +11,52 @@
 <body>
 
     <header class="navbar">
-        <div class="logo">💡 Keep Clone</div>
+        <div class="logo-area">
+            <button class="menu-toggle-btn" title="Menu Utama"><i class="fas fa-bars"></i></button>
+            <div class="logo"><i class="fas fa-lightbulb" style="color: #fbbc04; margin-right: 8px;"></i>Keep</div>
+        </div>
         
         <div class="search-container">
             <i class="fas fa-search search-icon"></i>
-            <input type="text" id="search-bar" placeholder="Cari catatan berdasarkan judul atau isi...">
+            <input type="text" id="search-bar" placeholder="Cari catatan...">
         </div>
         
-        </header>
+        <div class="nav-right-icons">
+            <button title="Refresh"><i class="fas fa-redo"></i></button>
+            <button title="Tampilan Daftar"><i class="fas fa-th-list"></i></button>
+            <button title="Setelan"><i class="fas fa-cog"></i></button>
+        </div>
+    </header>
 
     <div class="app-layout">
         <aside class="sidebar">
-            <div class="menu-item active">Catatan</div>
-            <div class="menu-item">Pengingat</div>
-            <div class="menu-item">Edit label</div>
-            <div class="menu-item">Arsipkan</div>
-            <div class="menu-item">Sampah</div>
+            <div class="menu-item active"><i class="fas fa-lightbulb"></i> <span>Catatan</span></div>
+            <div class="menu-item"><i class="far fa-bell"></i> <span>Pengingat</span></div>
+            <div class="menu-item"><i class="fas fa-pen"></i> <span>Label</span></div>
+            <div class="menu-item"><i class="fas fa-archive"></i> <span>Arsip</span></div>
+            <div class="menu-item"><i class="fas fa-trash-alt"></i> <span>Sampah</span></div>
         </aside>
 
         <main class="main-content">
             <div class="input-container">
-                <input type="text" id="note-title" placeholder="Judul">
-                <textarea id="note-content" placeholder="Buat catatan..." rows="3"></textarea>
+                <div class="input-top-row">
+                    <input type="text" id="note-title" placeholder="Judul">
+                    <button class="pin-btn-input" title="Sematkan Catatan"><i class="fas fa-thumbtack"></i></button>
+                </div>
+                <textarea id="note-content" placeholder="Tulis catatan..." rows="2"></textarea>
                 
                 <div class="input-actions-bar">
                     <div class="action-icons">
+                        <button type="button" title="Beri Centang"><i class="far fa-check-square"></i></button>
                         <button type="button" title="Ingatkan saya"><i class="far fa-bell"></i></button>
-                        <button type="button" title="Ubah warna"><i class="fas fa-palette"></i></button>
-                        <button type="button" id="archive-input-btn" title="Arsipkan"><i class="fas fa-archive"></i></button>
-                        <button type="button" title="Lainnya"><i class="fas fa-ellipsis-v"></i></button>
+                        <button type="button" id="change-color-btn" title="Ubah Warna"><i class="fas fa-palette"></i></button>
+                        <button type="button" title="Tambahkan Gambar"><i class="far fa-image"></i></button>
+                        <button type="button" title="Arsipkan"><i class="fas fa-archive"></i></button>
                     </div>
-                    <button id="add-note-btn">Tutup</button>
+                    
+                    <div class="action-right-group">
+                        <button id="add-note-btn">Tutup</button>
+                    </div>
                 </div>
             </div>
 

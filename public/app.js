@@ -3,12 +3,28 @@ const noteContent = document.getElementById('note-content');
 const addNoteBtn = document.getElementById('add-note-btn');
 const notesContainer = document.getElementById('notes-container');
 const searchBar = document.getElementById('search-bar');
-let allNotes = [];
+const inputContainer = document.querySelector('.input-container');
 
-// 1. Ambil data catatan dari Backend
+let allNotes = [];
+let currentView = 'Catatan'; 
+
+// 1. Ambil data catatan dari Backend sesuai halaman yang aktif
 async function fetchNotes() {
+    let url = '/api/notes';
+    
+    // Tentukan endpoint API berdasarkan halaman yang sedang dibuka di sidebar
+    if (currentView === 'Arsipkan') {
+        url = '/api/notes/archived';
+        if(inputContainer) inputContainer.style.display = 'none'; // Sembunyikan form input di arsip
+    } else if (currentView === 'Sampah') {
+        url = '/api/notes/trashed';
+        if(inputContainer) inputContainer.style.display = 'none'; // Sembunyikan form input di sampah
+    } else {
+        if(inputContainer) inputContainer.style.display = 'block'; // Munculkan form input di halaman utama
+    }
+
     try {
-        const response = await fetch('/api/notes');
+        const response = await fetch(url);
         allNotes = await response.json();
         renderNotes(allNotes);
     } catch (error) {
@@ -16,73 +32,158 @@ async function fetchNotes() {
     }
 }
 
-// 2. Render Catatan ke Layar dengan Bar Ikon Modern
+// 2. Render Catatan ke Layar dengan Dropdown Menu Titik Tiga
 function renderNotes(notesList) {
     notesContainer.innerHTML = '';
+    
+    if (notesList.length === 0) {
+        notesContainer.innerHTML = `<p style="color: var(--text-secondary); text-align: center; width: 100%; margin-top: 20px;">Tidak ada catatan di sini.</p>`;
+        return;
+    }
     
     notesList.forEach((note) => {
         const noteCard = document.createElement('div');
         noteCard.classList.add('note-card');
         
-        // Membungkus kartu dengan ikon-ikon aksi di bagian bawahnya
+        let trashInfo = '';
+        let dropdownItems = '';
+
+        // Tentukan isi menu dropdown berdasarkan halaman aktif
+        if (currentView === 'Sampah') {
+            trashInfo = `<div class="trash-time-info"><i class="far fa-clock"></i> 7 hari lagi</div>`;
+            dropdownItems = `
+                <div class="dropdown-item restore-btn"><i class="fas fa-undo"></i> Pulihkan</div>
+                <div class="dropdown-item delete-perm-btn delete-danger"><i class="fas fa-trash-alt"></i> Hapus Selamanya</div>
+            `;
+        } else if (currentView === 'Arsipkan') {
+            dropdownItems = `
+                <div class="dropdown-item unarchive-btn"><i class="fas fa-upload"></i> Pindahkan ke Catatan</div>
+                <div class="dropdown-item trash-btn"><i class="fas fa-trash"></i> Hapus (Ke Sampah)</div>
+            `;
+        } else {
+            dropdownItems = `
+                <div class="dropdown-item archive-btn"><i class="fas fa-archive"></i> Arsipkan</div>
+                <div class="dropdown-item trash-btn"><i class="fas fa-trash"></i> Hapus (Ke Sampah)</div>
+            `;
+        }
+
         noteCard.innerHTML = `
-            <h3 contenteditable="true" class="edit-title">${note.title || ''}</h3>
-            <p contenteditable="true" class="edit-content">${note.content}</p>
-            <div class="note-actions">
-                <button class="icon-btn archive-btn" title="Arsipkan"><i class="fas fa-archive"></i></button>
-                <button class="icon-btn delete-btn" title="Buang ke sampah"><i class="fas fa-trash"></i></button>
-                <button class="save-btn">Simpan</button>
+            ${trashInfo}
+            <button class="card-pin-btn" title="Sematkan"><i class="fas fa-thumbtack"></i></button>
+            <h3 contenteditable="${currentView === 'Catatan'}" class="edit-title">${note.title || ''}</h3>
+            <p contenteditable="${currentView === 'Catatan'}" class="edit-content">${note.content}</p>
+            
+            <div class="note-card-footer">
+                <button class="more-options-btn" title="Lainnya"><i class="fas fa-ellipsis-v"></i></button>
+                <div class="custom-dropdown-menu">
+                    ${dropdownItems}
+                </div>
             </div>
         `;
         
-        // Fungsi tombol Simpan Inline
-        const saveBtn = noteCard.querySelector('.save-btn');
-        saveBtn.addEventListener('click', async () => {
-            const newTitle = noteCard.querySelector('.edit-title').innerText.trim();
-            const newContent = noteCard.querySelector('.edit-content').innerText.trim();
-            try {
+        // --- LOGIKA AUTO SAVE ON BLUR ---
+        if (currentView === 'Catatan') {
+            const titleField = noteCard.querySelector('.edit-title');
+            const contentField = noteCard.querySelector('.edit-content');
+
+            const autoSave = async () => {
+                const newTitle = titleField.innerText.trim();
+                const newContent = contentField.innerText.trim();
                 await fetch(`/api/notes/${note.id}`, {
                     method: 'PUT',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ title: newTitle, content: newContent })
                 });
-                saveBtn.innerText = "Tersimpan!";
-                setTimeout(() => { saveBtn.innerText = "Simpan"; }, 1500);
-                fetchNotes();
-            } catch (error) {
-                console.error("Gagal mengupdate:", error);
-            }
-        });
+            };
+            titleField.addEventListener('blur', autoSave);
+            contentField.addEventListener('blur', autoSave);
+        }
         
-        // Fungsi tombol Ubah Jadi Arsip (Sementara kita pakai DELETE atau update status nanti)
-        const archiveBtn = noteCard.querySelector('.archive-btn');
-        archiveBtn.addEventListener('click', () => {
-            alert("Fitur arsip terpicu untuk ID: " + note.id);
-            // Nanti dihubungkan ke backend statusis_archived
+        // --- LOGIKA MUNCULKAN / SEMBUNYIKAN DROPDOWN ---
+        const moreBtn = noteCard.querySelector('.more-options-btn');
+        const dropdown = noteCard.querySelector('.custom-dropdown-menu');
+        
+        moreBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            document.querySelectorAll('.custom-dropdown-menu').forEach(d => {
+                if(d !== dropdown) d.classList.remove('show');
+            });
+            dropdown.classList.toggle('show');
         });
 
-        // Fungsi tombol Hapus (Buang ke Sampah)
-        const deleteBtn = noteCard.querySelector('.delete-btn');
-        deleteBtn.addEventListener('click', async () => {
-            try {
+        // --- EVENT HANDLER UNTUK TOMBOL DI DALAM DROPDOWN ---
+        
+        // Tombol Arsipkan
+        const archiveBtn = noteCard.querySelector('.archive-btn');
+        if (archiveBtn) {
+            archiveBtn.addEventListener('click', async () => {
+                await fetch(`/api/notes/${note.id}/archive`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ is_archived: 1 })
+                });
+                fetchNotes();
+            });
+        }
+
+        // Tombol Kembalikan dari Arsip
+        const unarchiveBtn = noteCard.querySelector('.unarchive-btn');
+        if (unarchiveBtn) {
+            unarchiveBtn.addEventListener('click', async () => {
+                await fetch(`/api/notes/${note.id}/archive`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ is_archived: 0 })
+                });
+                fetchNotes();
+            });
+        }
+
+        // Tombol Buang ke Sampah (Soft Delete)
+        const trashBtn = noteCard.querySelector('.trash-btn');
+        if (trashBtn) {
+            trashBtn.addEventListener('click', async () => {
                 await fetch(`/api/notes/${note.id}`, { method: 'DELETE' });
                 fetchNotes();
-            } catch (error) {
-                console.error("Gagal menghapus:", error);
-            }
-        });
+            });
+        }
+
+        // Tombol Pulihkan dari Sampah
+        const restoreBtn = noteCard.querySelector('.restore-btn');
+        if (restoreBtn) {
+            restoreBtn.addEventListener('click', async () => {
+                await fetch(`/api/notes/${note.id}/restore`, { method: 'PUT' });
+                fetchNotes();
+            });
+        }
+
+        // Tombol Hapus Permanen (Tanpa Pop-Up)
+        const deletePermBtn = noteCard.querySelector('.delete-perm-btn');
+        if (deletePermBtn) {
+            deletePermBtn.addEventListener('click', async () => {
+                await fetch(`/api/notes/${note.id}/permanent`, { method: 'DELETE' });
+                fetchNotes();
+            });
+        }
         
         notesContainer.appendChild(noteCard);
     });
 }
+
+// Tutup dropdown jika klik di luar kartu
+document.addEventListener('click', () => {
+    document.querySelectorAll('.custom-dropdown-menu').forEach(d => d.classList.remove('show'));
+});
 
 // 3. Tambah Catatan Baru
 async function addNote() {
     const title = noteTitle.value.trim();
     const content = noteContent.value.trim();
 
-    if (content === "") {
-        alert("Isi catatan tidak boleh kosong!");
+    // Jika kosong dua-duanya, abaikan proses simpan
+    if (title === "" && content === "") {
+        noteTitle.value = '';
+        noteContent.value = '';
         return;
     }
 
@@ -92,7 +193,8 @@ async function addNote() {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ title, content })
         });
-
+        
+        // Reset form input setelah berhasil disimpan
         noteTitle.value = '';
         noteContent.value = '';
         fetchNotes(); 
@@ -116,16 +218,32 @@ searchBar.addEventListener('input', (e) => {
 const menuItems = document.querySelectorAll('.menu-item');
 menuItems.forEach(item => {
     item.addEventListener('click', () => {
-        // Hapus kelas active dari semua menu
         menuItems.forEach(i => i.classList.remove('active'));
-        // Tambahkan kelas active ke menu yang diklik
         item.classList.add('active');
         
-        // Info log untuk memastikan klik berfungsi sebelum kita pasang filternya
-        console.log("Pindah ke halaman: " + item.innerText);
+        const rawText = item.innerText.trim();
+        
+        if (rawText.includes('Catatan')) {
+            currentView = 'Catatan';
+        } else if (rawText.includes('Arsipkan') || rawText.includes('Arsip')) {
+            currentView = 'Arsipkan';
+        } else if (rawText.includes('Sampah')) {
+            currentView = 'Sampah';
+        }
+        
+        fetchNotes(); 
     });
 });
 
-// Jalankan aplikasi pertama kali
+// Jalankan fungsi simpan saat tombol "Tutup" diklik
 addNoteBtn.addEventListener('click', addNote);
+
+// Otomatis simpan saat pengguna mengeklik area di luar box input (Fitur Otentik Google Keep)
+document.addEventListener('click', (e) => {
+    if (inputContainer && !inputContainer.contains(e.target) && e.target !== addNoteBtn) {
+        addNote();
+    }
+});
+
+// Jalankan aplikasi pertama kali
 fetchNotes();

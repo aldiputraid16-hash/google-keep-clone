@@ -1,311 +1,445 @@
-/* --- 1. PENGATURAN UMUM & WARNA GOOGLE KEEP DARK MODE --- */
 :root {
-    --bg-main: #202124;
-    --bg-sidebar-active: #41331c;
-    --bg-card: #202124;
-    --border-color: #5f6368;
-    --text-primary: #e8eaed;
-    --text-secondary: #9aa0a6;
-    --input-bg: #525355;
+    --bg-primary: #202124;       
+    --bg-secondary: #2f3033;     
+    --border-color: #424242;     
+    --text-primary: #e8eaed;     
+    --text-secondary: #9aa0a6;   
+    --accent-color: #fbbc04;     
+    --sidebar-width: 240px;
 }
 
 * {
+    box-sizing: border-box;
     margin: 0;
     padding: 0;
-    box-sizing: border-box;
-    font-family: 'Roboto', Arial, sans-serif;
 }
 
 body {
-    background-color: var(--bg-main);
+    background-color: var(--bg-primary);
     color: var(--text-primary);
-    display: flex;
-    flex-direction: column;
-    height: 100vh;
-    overflow: hidden;
+    font-family: 'Roboto', Arial, sans-serif;
+    overflow-x: hidden;
 }
 
-/* --- 2. NAVBAR (BAGIAN ATAS) --- */
 .navbar {
+    height: 64px;
     display: flex;
     align-items: center;
-    justify-content: flex-start; /* Mengubah ke flex-start agar konten merapat ke kiri */
-    padding: 8px 24px;
+    justify-content: space-between;
+    padding: 0 16px;
     border-bottom: 1px solid var(--border-color);
-    background-color: var(--bg-main);
-    height: 64px;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    background: var(--bg-primary);
+    z-index: 100;
+}
+
+.logo-area {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.menu-toggle-btn {
+    background: none;
+    border: none;
+    color: var(--text-primary);
+    font-size: 20px;
+    padding: 12px;
+    border-radius: 50%;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background-color 0.2s;
+}
+
+.menu-toggle-btn:hover {
+    background-color: rgba(255, 255, 255, 0.1);
 }
 
 .logo {
     font-size: 22px;
-    font-weight: 400;
     color: var(--text-primary);
     display: flex;
     align-items: center;
-    gap: 8px;
-    width: 250px; /* Lebar statis agar search bar sejajar dengan batas konten utama */
+    font-weight: 400;
+    user-select: none;
 }
 
 .search-container {
-    flex: 1;
-    max-width: 720px;
-    margin-left: 20px; /* Memberi jarak dari logo */
-    position: relative; /* Penting agar posisi ikon bisa diatur secara absolut di dalam kotak */
     display: flex;
     align-items: center;
-}
-
-/* Mengatur posisi ikon kaca pembesar di dalam input */
-.search-icon {
-    position: absolute;
-    left: 16px;
-    color: var(--text-secondary);
-    font-size: 16px;
-    pointer-events: none; /* Agar klik tembus langsung ke inputan */
-}
-
-.search-container input {
-    width: 100%;
-    padding: 12px 20px 12px 48px; /* Padding kiri ditambah (48px) agar teks ketikan tidak menabrak ikon */
-    font-size: 16px;
-    border: none;
+    background-color: #525355; 
     border-radius: 8px;
-    background-color: #2f3033;
+    width: 100%;
+    max-width: 650px;
+    height: 46px;
+    padding: 0 16px;
+    margin: 0 20px;
+    box-sizing: border-box;
+    transition: background-color 0.2s, box-shadow 0.2s;
+}
+
+.search-container:focus-within {
+    background-color: #ffffff;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+}
+
+.search-icon {
     color: var(--text-primary);
+    font-size: 16px;
+    margin-right: 12px;
+}
+
+.search-container:focus-within .search-icon {
+    color: #5f6368;
+}
+
+#search-bar {
+    background: none;
+    border: none;
     outline: none;
+    width: 100%;
+    height: 100%;
+    color: var(--text-primary);
+    font-size: 16px;
+}
+
+.search-container:focus-within #search-bar {
+    color: #202124;
+}
+
+#search-bar::placeholder {
+    color: #9aa0a6;
+}
+
+.nav-right-icons {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.nav-right-icons button {
+    background: none;
+    border: none;
+    color: var(--text-primary);
+    font-size: 18px;
+    padding: 12px;
+    border-radius: 50%;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     transition: background-color 0.2s;
 }
 
-.search-container input:focus {
-    background-color: #fff;
-    color: #000;
+.nav-right-icons button:hover {
+    background-color: rgba(255, 255, 255, 0.1);
 }
 
-/* --- 3. LAYOUT UTAMA (SIDEBAR + KONTEN) --- */
 .app-layout {
     display: flex;
-    flex: 1;
-    overflow: hidden;
+    position: relative;
+    padding-top: 64px; /* Solusi utama penahan agar konten tidak naik ke atas navbar */
+    height: 100vh;
 }
 
 .sidebar {
-    width: 280px;
+    width: var(--sidebar-width);
     padding-top: 12px;
-    background-color: var(--bg-main);
+    background: var(--bg-primary);
+    border-right: 1px solid var(--border-color);
+    height: calc(100vh - 64px);
+    position: fixed; /* Menjaga sidebar tetap di tempat saat di-scroll */
+    left: 0;
+}
+
+.main-content {
+    flex: 1;
+    background-color: var(--bg-primary);
+    padding: 24px;
+    overflow-y: auto;
     display: flex;
     flex-direction: column;
+    align-items: center;
+    margin-left: var(--sidebar-width); /* Memberi ruang di samping kanan sidebar */
+    min-height: calc(100vh - 64px);
+}
+
+.input-container {
+    width: 100%;
+    max-width: 600px;
+    background: #2d2e31; 
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    box-shadow: 0 1px 3px 0 rgba(0,0,0,0.5);
+    padding: 12px 16px;
+    margin-bottom: 48px;
+}
+
+.input-top-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+#note-title {
+    width: 100%;
+    border: none;
+    outline: none;
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--text-primary);
+    background: transparent;
+    padding-bottom: 10px;
+}
+
+#note-title::placeholder, #note-content::placeholder {
+    color: var(--text-secondary);
+}
+
+.pin-btn-input {
+    background: none;
+    border: none;
+    color: var(--text-secondary);
+    cursor: pointer;
+    padding: 8px;
+    border-radius: 50%;
+}
+
+.pin-btn-input:hover {
+    background-color: var(--bg-secondary);
+    color: var(--text-primary);
+}
+
+#note-content {
+    width: 100%;
+    border: none;
+    outline: none;
+    font-size: 14px;
+    resize: none;
+    color: var(--text-primary);
+    background: transparent;
+}
+
+.input-actions-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 12px;
+}
+
+.action-icons {
+    display: flex;
+    gap: 4px;
+}
+
+.action-icons button {
+    background: none;
+    border: none;
+    color: var(--text-secondary);
+    font-size: 14px;
+    padding: 8px;
+    border-radius: 50%;
+    cursor: pointer;
+}
+
+.action-icons button:hover {
+    background-color: var(--bg-secondary);
+    color: var(--text-primary);
+}
+
+.action-right-group {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+#add-note-btn {
+    background: none;
+    color: var(--text-primary);
+    border: none;
+    font-weight: 500;
+    padding: 8px 24px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: background-color 0.2s;
+}
+
+#add-note-btn:hover {
+    background-color: rgba(255, 255, 255, 0.08);
 }
 
 .menu-item {
     display: flex;
     align-items: center;
     padding: 12px 24px;
+    gap: 24px;
     font-size: 14px;
     font-weight: 500;
     color: var(--text-primary);
-    cursor: pointer;
     border-radius: 0 25px 25px 0;
-    margin-right: 8px;
-    transition: background 0.1s;
+    cursor: pointer;
+    margin-bottom: 4px;
+    width: 95%;
+    transition: background 0.2s;
+}
+
+.menu-item i {
+    font-size: 18px;
+    color: var(--text-secondary);
+    width: 20px;
+    text-align: center;
 }
 
 .menu-item:hover {
-    background-color: #35363a;
+    background-color: var(--bg-secondary);
 }
 
 .menu-item.active {
-    background-color: var(--bg-sidebar-active);
-    color: #feefc3;
+    background-color: #41331c;
+    color: var(--accent-color);
 }
 
-/* --- 4. AREA UTAMA KANAN (INPUT & GRID CATATAN) --- */
-.main-content {
-    flex: 1;
-    padding: 24px;
-    overflow-y: auto;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
+.menu-item.active i {
+    color: var(--accent-color);
 }
 
-/* Form Pembuat Catatan Baru */
-.input-container {
-    width: 100%;
-    max-width: 600px;
-    background-color: var(--bg-main);
-    border: 1px solid var(--border-color);
-    border-radius: 8px;
-    padding: 12px 16px;
-    box-shadow: 0 1px 2px 0 rgba(0,0,0,0.6), 0 2px 6px 2px rgba(0,0,0,0.3);
-    margin-bottom: 48px;
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-}
-
-.input-container input, 
-.input-container textarea {
-    width: 100%;
-    background: transparent;
-    border: none;
-    outline: none;
-    color: var(--text-primary);
-    font-size: 15px;
-    resize: none;
-}
-
-.input-container input {
-    font-weight: 500;
-    font-size: 16px;
-}
-
-.input-container button {
-    align-self: flex-end;
-    background: transparent;
-    border: none;
-    color: var(--text-primary);
-    font-weight: bold;
-    cursor: pointer;
-    padding: 8px 16px;
-    border-radius: 4px;
-}
-
-.input-container button:hover {
-    background-color: #35363a;
-}
-
-/* Grid Pembungkus Kartu Catatan */
 #notes-container {
     width: 100%;
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
-    grid-auto-rows: max-content;
     gap: 16px;
     align-items: start;
 }
 
-/* --- 5. KARTU CATATAN (NOTE CARD) --- */
 .note-card {
-    background-color: var(--bg-card);
+    background: #202124; 
     border: 1px solid var(--border-color);
     border-radius: 8px;
     padding: 16px;
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
     position: relative;
-    word-break: break-word;
-    transition: box-shadow 0.2s;
+    transition: box-shadow 0.2s, border-color 0.2s;
+    word-wrap: break-word;
 }
 
 .note-card:hover {
-    box-shadow: 0 1px 3px 0 rgba(0,0,0,0.8), 0 4px 8px 3px rgba(0,0,0,0.5);
+    box-shadow: 0 1px 3px 0 rgba(0,0,0,0.5), 0 4px 8px 3px rgba(0,0,0,0.3);
+    border-color: #5f6368;
 }
 
 .note-card h3 {
     font-size: 16px;
     font-weight: 500;
+    margin-bottom: 8px;
+    outline: none;
+    color: var(--text-primary);
 }
 
 .note-card p {
     font-size: 14px;
     color: #e8eaed;
-    line-height: 1.5;
+    outline: none;
     white-space: pre-wrap;
 }
 
-/* Tombol Aksi di Dalam Kartu (Muncul pas di-hover) */
-.note-actions {
-    display: flex;
-    justify-content: flex-end;
-    gap: 8px;
+.card-pin-btn {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    background: none;
+    border: none;
+    color: var(--text-secondary);
+    cursor: pointer;
     opacity: 0;
     transition: opacity 0.2s;
 }
 
-.note-card:hover .note-actions {
+.note-card:hover .card-pin-btn {
     opacity: 1;
 }
 
-.note-actions button {
-    background: transparent;
+.note-card-footer {
+    display: flex;
+    justify-content: flex-end;
+    position: relative;
+    margin-top: 14px;
+}
+
+.more-options-btn {
+    background: none;
     border: none;
+    color: var(--text-secondary);
+    cursor: pointer;
     padding: 6px 10px;
-    border-radius: 4px;
-    font-size: 12px;
-    cursor: pointer;
-    color: var(--text-secondary);
-}
-
-.note-actions button:hover {
-    background-color: #35363a;
-    color: var(--text-primary);
-}
-
-.note-actions .delete-btn:hover {
-    color: #ff5252;
-}
-/* Menghilangkan border default saat teks catatan diklik/diedit */
-.edit-title:focus, .edit-content:focus {
-    outline: none;
-    background-color: #2a2b2e;
-    border-radius: 4px;
-    padding: 2px 4px;
-}
-
-/* Tombol simpan perubahan inline */
-.note-actions .save-btn:hover {
-    color: #feefc3;
-}
-/* Styling Bar Ikon di Bawah Input Catatan */
-.input-actions-bar {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    width: 100%;
-    margin-top: 8px;
-}
-
-.action-icons {
-    display: flex;
-    gap: 16px;
-}
-
-.action-icons button {
-    background: transparent;
-    border: none;
-    color: var(--text-secondary);
-    font-size: 16px;
-    cursor: pointer;
-    padding: 6px;
     border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: background 0.2s, color 0.2s;
-}
-
-.action-icons button:hover {
-    background-color: #35363a;
-    color: var(--text-primary);
-}
-/* Ikon Aksi di Dalam Kartu Catatan */
-.note-actions .icon-btn {
-    background: transparent;
-    border: none;
-    color: var(--text-secondary);
     font-size: 14px;
-    cursor: pointer;
-    padding: 4px 8px;
-    border-radius: 50%;
-    transition: color 0.2s, background 0.2s;
 }
 
-.note-actions .icon-btn:hover {
-    background-color: #35363a;
+.more-options-btn:hover {
+    background-color: var(--bg-secondary);
     color: var(--text-primary);
 }
 
-.note-actions .delete-btn:hover {
-    color: #ff5252;
+.custom-dropdown-menu {
+    display: none;
+    position: absolute;
+    bottom: 35px;
+    right: 0;
+    background-color: #2d2e31;
+    min-width: 170px;
+    box-shadow: 0 1px 3px 0 rgba(0,0,0,0.5), 0 4px 8px 3px rgba(0,0,0,0.3);
+    border-radius: 4px;
+    z-index: 10;
+    padding: 6px 0;
+    border: 1px solid var(--border-color);
+}
+
+.custom-dropdown-menu.show {
+    display: block;
+}
+
+.dropdown-item {
+    padding: 10px 14px;
+    font-size: 13px;
+    color: var(--text-primary);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.dropdown-item i {
+    width: 16px;
+    text-align: center;
+    color: var(--text-secondary);
+}
+
+.dropdown-item:hover {
+    background-color: var(--bg-secondary);
+}
+
+.delete-danger:hover {
+    background-color: #5a2323;
+    color: #ff8080;
+}
+
+.delete-danger:hover i {
+    color: #ff8080;
+}
+
+.trash-time-info {
+    font-size: 11px;
+    background-color: #3c2424;
+    color: #ff8080;
+    padding: 4px 8px;
+    border-radius: 4px;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    margin-bottom: 10px;
 }
