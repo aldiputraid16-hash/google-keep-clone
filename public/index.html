@@ -5,19 +5,22 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Google Keep Clone - UAS</title>
     <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
 </head>
 <body>
-   <header class="navbar">
+
+    <header class="navbar">
         <div class="logo">💡 Keep Clone</div>
+        
         <div class="search-container">
+            <i class="fas fa-search search-icon"></i>
             <input type="text" id="search-bar" placeholder="Cari catatan berdasarkan judul atau isi...">
         </div>
-    </header>
-
-    <!-- Bungkus Utama Aplikasi (Sidebar + Konten) -->
-    <div class="app-layout">
         
-        <!-- Sidebar Kiri (Menu Tambahan) -->
+        </header>
+
+    <div class="app-layout">
         <aside class="sidebar">
             <div class="menu-item active">Catatan</div>
             <div class="menu-item">Pengingat</div>
@@ -26,23 +29,15 @@
             <div class="menu-item">Sampah</div>
         </aside>
 
-        <!-- Area Konten Utama (Form + Grid Catatan) -->
         <main class="main-content">
-            <!-- Form Input Catatan -->
-            <div class="form-container">
-                <div class="note-form">
-                    <input type="text" id="note-title" placeholder="Judul">
-                    <textarea id="note-content" placeholder="Buat catatan..."></textarea>
-                    <div class="form-footer">
-                        <button id="add-note-btn">Simpan</button>
-                    </div>
-                </div>
+            <div class="input-container">
+                <input type="text" id="note-title" placeholder="Judul">
+                <textarea id="note-content" placeholder="Buat catatan..." rows="3"></textarea>
+                <button id="add-note-btn">Simpan</button>
             </div>
 
-            <!-- Wadah Grid Catatan -->
             <div id="notes-container"></div>
         </main>
-
     </div>
 
     <script src="app.js"></script>

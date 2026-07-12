@@ -3,20 +3,20 @@ const noteContent = document.getElementById('note-content');
 const addNoteBtn = document.getElementById('add-note-btn');
 const notesContainer = document.getElementById('notes-container');
 const searchBar = document.getElementById('search-bar');
-let allNotes = []; 
+let allNotes = [];
 
-// 1. Fungsi mengambil data dari MySQL via Backend
+// 1. Ambil data catatan dari Backend
 async function fetchNotes() {
     try {
         const response = await fetch('/api/notes');
-        allNotes = await response.json(); 
-        renderNotes(allNotes); 
+        allNotes = await response.json();
+        renderNotes(allNotes);
     } catch (error) {
         console.error("Gagal mengambil data catatan:", error);
     }
 }
 
-// 2. Fungsi merender data catatan ke HTML (Sudah ditambahkan tombol Edit)
+// 2. Render Catatan ke Layar (Menggunakan addEventListener agar tombol 100% berfungsi)
 function renderNotes(notesList) {
     notesContainer.innerHTML = '';
     
@@ -24,20 +24,57 @@ function renderNotes(notesList) {
         const noteCard = document.createElement('div');
         noteCard.classList.add('note-card');
         
+        // Kerangka kartu dengan contenteditable agar bisa diklik & diedit langsung
         noteCard.innerHTML = `
-            <h3>${note.title || 'Tanpa Judul'}</h3>
-            <p>${note.content}</p>
+            <h3 contenteditable="true" class="edit-title">${note.title || ''}</h3>
+            <p contenteditable="true" class="edit-content">${note.content}</p>
             <div class="note-actions">
-                <button class="edit-btn" onclick="editNote(${note.id}, '${note.title || ''}', '${note.content.replace(/'/g, "\\'")}')">Edit</button>
-                <button class="delete-btn" onclick="deleteNote(${note.id})">Hapus</button>
+                <button class="save-btn">Simpan</button>
+                <button class="delete-btn">Hapus</button>
             </div>
         `;
+        
+        // Pasang fungsi tombol Simpan secara aman
+        const saveBtn = noteCard.querySelector('.save-btn');
+        saveBtn.addEventListener('click', async () => {
+            const newTitle = noteCard.querySelector('.edit-title').innerText.trim();
+            const newContent = noteCard.querySelector('.edit-content').innerText.trim();
+            
+            if (newContent === "") {
+                alert("Isi catatan tidak boleh kosong!");
+                return;
+            }
+            
+            try {
+                await fetch(`/api/notes/${note.id}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ title: newTitle, content: newContent })
+                });
+                saveBtn.innerText = "Tersimpan!";
+                setTimeout(() => { saveBtn.innerText = "Simpan"; }, 1500);
+                fetchNotes(); // Refresh data
+            } catch (error) {
+                console.error("Gagal mengupdate:", error);
+            }
+        });
+        
+        // Pasang fungsi tombol Hapus secara aman
+        const deleteBtn = noteCard.querySelector('.delete-btn');
+        deleteBtn.addEventListener('click', async () => {
+            try {
+                await fetch(`/api/notes/${note.id}`, { method: 'DELETE' });
+                fetchNotes(); // Refresh data
+            } catch (error) {
+                console.error("Gagal menghapus:", error);
+            }
+        });
         
         notesContainer.appendChild(noteCard);
     });
 }
 
-// 3. Fungsi menambah catatan baru ke MySQL via Backend
+// 3. Tambah Catatan Baru
 async function addNote() {
     const title = noteTitle.value.trim();
     const content = noteContent.value.trim();
@@ -62,59 +99,17 @@ async function addNote() {
     }
 }
 
-// 4. Fungsi mengedit/update catatan via Backend (TAMBAHAN BARU)
-window.editNote = async function(id, currentTitle, currentContent) {
-    const newTitle = prompt("Masukkan judul baru:", currentTitle);
-    if (newTitle === null) return; // Batalkan jika user klik Cancel
-
-    const newContent = prompt("Masukkan isi catatan baru:", currentContent);
-    if (newContent === null) return; // Batalkan jika user klik Cancel
-
-    if (newContent.trim() === "") {
-        alert("Isi catatan tidak boleh kosong!");
-        return;
-    }
-
-    try {
-        await fetch(`/api/notes/${id}`, {
-            method: 'PUT',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ title: newTitle.trim(), content: newContent.trim() })
-        });
-        fetchNotes(); // Refresh tampilan setelah sukses update
-    } catch (error) {
-        console.error("Gagal mengupdate catatan:", error);
-    }
-};
-
-// 5. Fungsi menghapus catatan dari MySQL via Backend berdasarkan ID
-window.deleteNote = async function(id) {
-    if (confirm("Apakah Anda yakin ingin menghapus catatan ini?")) {
-        try {
-            await fetch(`/api/notes/${id}`, { method: 'DELETE' });
-            fetchNotes(); 
-        } catch (error) {
-            console.error("Gagal menghapus catatan:", error);
-        }
-    }
-};
-
-// Fungsi untuk memfilter catatan secara real-time saat user mengetik
+// 4. Fitur Pencarian Real-Time
 searchBar.addEventListener('input', (e) => {
     const keyword = e.target.value.toLowerCase();
-    
-    // Filter data dari variabel allNotes yang sudah kita simpan tadi
     const filteredNotes = allNotes.filter(note => {
         const titleMatch = (note.title || '').toLowerCase().includes(keyword);
         const contentMatch = (note.content || '').toLowerCase().includes(keyword);
         return titleMatch || contentMatch;
     });
-    
-    // Tampilkan hanya catatan yang cocok dengan kata kunci pencarian
     renderNotes(filteredNotes);
 });
 
+// Jalankan aplikasi pertama kali
 addNoteBtn.addEventListener('click', addNote);
-
-// Jalankan fetch saat pertama kali web dibuka
 fetchNotes();
