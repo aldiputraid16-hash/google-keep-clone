@@ -152,3 +152,15 @@ exports.getNoteLabels = async (req, res) => {
     }
 };
 
+exports.setReminder = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { reminder_time } = req.body;
+        // Panggil fungsi di model (asumsi Anda sudah buat updateReminder di model)
+        await Note.updateReminder(id, reminder_time);
+        res.status(200).json({ message: "Pengingat tersimpan" });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+};
+
