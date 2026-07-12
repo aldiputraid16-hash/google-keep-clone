@@ -2,9 +2,13 @@ const express = require('express');
 const router = express.Router();
 const labelController = require('../controllers/labelController');
 
-// Menyambungkan URL API dengan fungsi di Controller
-router.get('/', labelController.getAllLabels);      
+router.get('/', labelController.getAllLabels);     
 router.post('/', labelController.createLabel);    
 router.delete('/:id', labelController.deleteLabel); 
+
+// Rute untuk hubungan Label ke Catatan
+router.get('/note/:noteId', labelController.getLabelsByNote);
+router.post('/note/:noteId', labelController.addLabelToNote);
+router.delete('/note/:noteId', labelController.removeLabelFromNote);
 
 module.exports = router;

@@ -7,20 +7,33 @@ const inputContainer = document.querySelector('.input-container');
 
 let allNotes = [];
 let currentView = 'Catatan'; 
+let isInputPinned = 0; // 0 = tidak disematkan, 1 = disematkan
+let currentInputColor = '#202124'; // Menyimpan state warna form input atas
 
-// 1. Mengambil data catatan
+// Pilihan warna otentik Google Keep Dark Mode
+const colorPalette = [
+    { name: 'Default', value: '#202124' },
+    { name: 'Merah Tua', value: '#5c2b29' },
+    { name: 'Jingga', value: '#614a19' },
+    { name: 'Kuning', value: '#635d19' },
+    { name: 'Hijau Tua', value: '#345920' },
+    { name: 'Teal', value: '#16504b' },
+    { name: 'Biru', value: '#2d555e' },
+    { name: 'Biru Tua', value: '#1e3a5f' },
+    { name: 'Ungu', value: '#42275a' },
+    { name: 'Merah Muda', value: '#5b2245' }
+];
+
 async function fetchNotes() {
     let url = '/api/notes';
-    
-    // Tentukan endpoint API berdasarkan halaman yang sedang dibuka di sidebar
     if (currentView === 'Arsipkan') {
         url = '/api/notes/archived';
-        if(inputContainer) inputContainer.style.display = 'none'; // Sembunyikan form input di arsip
+        if(inputContainer) inputContainer.style.display = 'none';
     } else if (currentView === 'Sampah') {
         url = '/api/notes/trashed';
-        if(inputContainer) inputContainer.style.display = 'none'; // Sembunyikan form input di sampah
+        if(inputContainer) inputContainer.style.display = 'none';
     } else {
-        if(inputContainer) inputContainer.style.display = 'block'; // Munculkan form input di halaman utama
+        if(inputContainer) inputContainer.style.display = 'block';
     }
 
     try {
@@ -32,14 +45,12 @@ async function fetchNotes() {
     }
 }
 
-// 2. Render Catatan ke Layar 
 function renderNotes(notesList) {
     const notesContainer = document.getElementById('notes-container');
     const pinnedContainer = document.getElementById('pinned-notes-container');
     const pinnedSection = document.getElementById('pinned-section');
     const othersTitle = document.getElementById('others-title');
     
-    // Reset isi container
     notesContainer.innerHTML = '';
     if (pinnedContainer) pinnedContainer.innerHTML = '';
     
@@ -50,9 +61,7 @@ function renderNotes(notesList) {
         return;
     }
     
-    // Cek apakah ada catatan yang disematkan (is_pinned === 1)
     const hasPinned = notesList.some(note => note.is_pinned === 1 && currentView === 'Catatan');
-    
     if (hasPinned) {
         if (pinnedSection) pinnedSection.style.display = 'block';
         if (othersTitle) othersTitle.style.display = 'block';
@@ -65,7 +74,9 @@ function renderNotes(notesList) {
         const noteCard = document.createElement('div');
         noteCard.classList.add('note-card');
         
-        // Tandai class jika kartu ini disematkan
+        const currentCardColor = note.color || '#202124';
+        noteCard.style.backgroundColor = currentCardColor;
+        
         if (note.is_pinned === 1 && currentView === 'Catatan') {
             noteCard.classList.add('pinned');
         }
@@ -73,7 +84,16 @@ function renderNotes(notesList) {
         let trashInfo = '';
         let dropdownItems = '';
 
-        // SINKRONISASI DROPDOWN DENGAN MENU "BUAT SALINAN"
+        let colorSelectionHTML = '';
+        if (currentView !== 'Sampah') {
+            colorSelectionHTML = `<div class="dropdown-color-section">`;
+            colorPalette.forEach(c => {
+                const activeBorder = currentCardColor.toLowerCase() === c.value.toLowerCase() ? 'border: 2px solid #fff;' : '';
+                colorSelectionHTML += `<div class="color-circle" data-color="${c.value}" title="${c.name}" style="background-color: ${c.value}; ${activeBorder}"></div>`;
+            });
+            colorSelectionHTML += `</div><hr style="border-color: rgba(255,255,255,0.1); margin: 5px 0;">`;
+        }
+
         if (currentView === 'Sampah') {
             trashInfo = `<div class="trash-time-info"><i class="far fa-clock"></i> 7 hari lagi</div>`;
             dropdownItems = `
@@ -82,19 +102,20 @@ function renderNotes(notesList) {
             `;
         } else if (currentView === 'Arsipkan') {
             dropdownItems = `
+                ${colorSelectionHTML}
                 <div class="dropdown-item unarchive-btn"><i class="fas fa-upload"></i> Pindahkan ke Catatan</div>
                 <div class="dropdown-item duplicate-btn"><i class="fas fa-copy"></i> Buat salinan</div>
                 <div class="dropdown-item trash-btn"><i class="fas fa-trash"></i> Hapus (Ke Sampah)</div>
             `;
         } else {
             dropdownItems = `
+                ${colorSelectionHTML}
                 <div class="dropdown-item archive-btn"><i class="fas fa-archive"></i> Arsipkan</div>
                 <div class="dropdown-item duplicate-btn"><i class="fas fa-copy"></i> Buat salinan</div>
                 <div class="dropdown-item trash-btn"><i class="fas fa-trash"></i> Hapus (Ke Sampah)</div>
             `;
         }
 
-        // Ikon pin berubah warna aktif jika is_pinned bernilai 1
         const pinIconColor = note.is_pinned === 1 ? 'color: var(--accent-color);' : 'color: var(--text-secondary);';
 
         noteCard.innerHTML = `
@@ -105,7 +126,7 @@ function renderNotes(notesList) {
             <h3 contenteditable="${currentView === 'Catatan'}" class="edit-title">${note.title || ''}</h3>
             <p contenteditable="${currentView === 'Catatan'}" class="edit-content">${note.content}</p>
             
-            <div class="note-card-footer">
+            <div class="note-card-footer" style="justify-content: flex-end;">
                 <button class="more-options-btn" title="Lainnya"><i class="fas fa-ellipsis-v"></i></button>
                 <div class="custom-dropdown-menu">
                     ${dropdownItems}
@@ -113,35 +134,49 @@ function renderNotes(notesList) {
             </div>
         `;
         
-        // --- LOGIKA TOMBOL PIN (SEMATKAN) ---
         const pinBtn = noteCard.querySelector('.card-pin-btn');
         if (currentView !== 'Catatan') {
-            if (pinBtn) pinBtn.style.display = 'none'; // Sembunyikan tombol pin jika di menu Sampah/Arsip
+            if (pinBtn) pinBtn.style.display = 'none';
         } else {
             if (pinBtn) {
                 pinBtn.addEventListener('click', async (e) => {
                     e.stopPropagation();
                     const nextPinnedStatus = note.is_pinned === 1 ? 0 : 1;
-                    
                     try {
                         await fetch(`/api/notes/${note.id}/pin`, {
                             method: 'PUT',
                             headers: { 'Content-Type': 'application/json' },
                             body: JSON.stringify({ is_pinned: nextPinnedStatus })
                         });
-                        fetchNotes(); // Reload layout catatan
+                        fetchNotes();
                     } catch (err) {
-                        console.error("Gagal mengubah status pin:", err);
+                        console.error(err);
                     }
                 });
             }
+
+            const colorCircles = noteCard.querySelectorAll('.color-circle');
+            colorCircles.forEach(circle => {
+                circle.addEventListener('click', async (e) => {
+                    e.stopPropagation();
+                    const chosenColor = circle.getAttribute('data-color');
+                    try {
+                        await fetch(`/api/notes/${note.id}/color`, {
+                            method: 'PUT',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ color: chosenColor })
+                        });
+                        fetchNotes();
+                    } catch (err) {
+                        console.error("Gagal mengganti warna:", err);
+                    }
+                });
+            });
         }
         
-        // --- LOGIKA AUTO SAVE ON BLUR ---
         if (currentView === 'Catatan') {
             const titleField = noteCard.querySelector('.edit-title');
             const contentField = noteCard.querySelector('.edit-content');
-
             const autoSave = async () => {
                 const newTitle = titleField.innerText.trim();
                 const newContent = contentField.innerText.trim();
@@ -155,7 +190,6 @@ function renderNotes(notesList) {
             contentField.addEventListener('blur', autoSave);
         }
         
-        // --- LOGIKA DROPDOWN MENU ---
         const moreBtn = noteCard.querySelector('.more-options-btn');
         const dropdown = noteCard.querySelector('.custom-dropdown-menu');
         
@@ -167,7 +201,6 @@ function renderNotes(notesList) {
             dropdown.classList.toggle('show');
         });
 
-        // --- HANDLER TOMBOL DROPDOWN ---
         const archiveBtn = noteCard.querySelector('.archive-btn');
         if (archiveBtn) {
             archiveBtn.addEventListener('click', async () => {
@@ -216,22 +249,18 @@ function renderNotes(notesList) {
             });
         }
 
-        // Logika Klik untuk menduplikasi Catatan (Buat salinan)
         const duplicateBtn = noteCard.querySelector('.duplicate-btn');
         if (duplicateBtn) {
             duplicateBtn.addEventListener('click', async () => {
                 try {
-                    await fetch(`/api/notes/${note.id}/duplicate`, {
-                        method: 'POST'
-                    });
-                    fetchNotes(); // Reload layar agar salinan langsung muncul
+                    await fetch(`/api/notes/${note.id}/duplicate`, { method: 'POST' });
+                    fetchNotes();
                 } catch (error) {
-                    console.error("Gagal menduplikasi catatan:", error);
+                    console.error(error);
                 }
             });
         }
         
-        // Masukkan kartu ke section yang tepat (Pinned vs Others)
         if (note.is_pinned === 1 && currentView === 'Catatan') {
             if (pinnedContainer) pinnedContainer.appendChild(noteCard);
         } else {
@@ -240,14 +269,13 @@ function renderNotes(notesList) {
     });
 }
 
-// 3. Tambah Catatan Baru
+// SIMPAN CATATAN BESERTA WARNA DARI INPUT FORM ATAS
 async function addNote() {
     const title = noteTitle.value.trim();
     const content = noteContent.value.trim();
 
-    // Jika kosong dua-duanya, abaikan proses simpan
     if (title === "" && content === "") {
-        resetInputForm(); // Bersihkan form
+        resetInputForm();
         return;
     }
 
@@ -258,29 +286,29 @@ async function addNote() {
             body: JSON.stringify({ 
                 title: title, 
                 content: content,
-                is_pinned: isInputPinned // Kirim status pin aktif dari form atas ke backend
+                is_pinned: isInputPinned,
+                color: currentInputColor // Kirim warna yang sedang aktif di form atas
             })
         });
-        
-        resetInputForm(); // Reset form dan warna pin setelah sukses menyimpan
+        resetInputForm();
         fetchNotes(); 
     } catch (error) {
         console.error("Gagal menambah catatan:", error);
     }
 }
 
-// Fungsi membantu untuk mereset tampilan form input atas ke semula
 function resetInputForm() {
     noteTitle.value = '';
     noteContent.value = '';
     isInputPinned = 0;
+    currentInputColor = '#202124'; // Reset warna state ke default
+    if (inputContainer) inputContainer.style.backgroundColor = '#202124'; // Reset warna visual form
     if (inputPinBtn) {
         const pinIcon = inputPinBtn.querySelector('i');
         if (pinIcon) pinIcon.style.color = 'var(--text-secondary)';
     }
 }
 
-// 4. Fitur Pencarian Real-Time
 searchBar.addEventListener('input', (e) => {
     const keyword = e.target.value.toLowerCase();
     const filteredNotes = allNotes.filter(note => {
@@ -291,15 +319,12 @@ searchBar.addEventListener('input', (e) => {
     renderNotes(filteredNotes);
 });
 
-// 5. Logika Navigasi Aktif Sidebar Kiri
 const menuItems = document.querySelectorAll('.menu-item');
 menuItems.forEach(item => {
     item.addEventListener('click', () => {
         menuItems.forEach(i => i.classList.remove('active'));
         item.classList.add('active');
-        
         const rawText = item.innerText.trim();
-        
         if (rawText.includes('Catatan')) {
             currentView = 'Catatan';
         } else if (rawText.includes('Arsipkan') || rawText.includes('Arsip')) {
@@ -307,43 +332,78 @@ menuItems.forEach(item => {
         } else if (rawText.includes('Sampah')) {
             currentView = 'Sampah';
         }
-        
         fetchNotes(); 
     });
 });
 
-// Jalankan fungsi simpan saat tombol "Tutup" diklik
 addNoteBtn.addEventListener('click', addNote);
 
-// Otomatis simpan saat pengguna mengeklik area di luar box input (Fitur Otentik Google Keep)
 document.addEventListener('click', (e) => {
     if (inputContainer && !inputContainer.contains(e.target) && e.target !== addNoteBtn) {
         addNote();
     }
 });
 
-// --- LOGIKA TOMBOL PIN PADA FORM INPUT UTAMA (ATAS) ---
-let isInputPinned = 0; // 0 = tidak disematkan, 1 = disematkan
 const inputPinBtn = document.querySelector('.pin-btn-input');
-
 if (inputPinBtn) {
     inputPinBtn.addEventListener('click', (e) => {
-        e.stopPropagation(); // Mencegah form tertutup otomatis
-        
-        // Toggle status pin (0 jadi 1, 1 jadi 0)
+        e.stopPropagation();
         isInputPinned = isInputPinned === 0 ? 1 : 0;
-        
-        // Ubah warna ikon paku payung sesuai status aktif
         const pinIcon = inputPinBtn.querySelector('i');
         if (isInputPinned === 1) {
-            pinIcon.style.color = 'var(--accent-color)'; // Berubah jadi Kuning Google Keep
+            pinIcon.style.color = 'var(--accent-color)';
             inputPinBtn.setAttribute('title', 'Lepas Sematan');
         } else {
-            pinIcon.style.color = 'var(--text-secondary)'; // Kembali ke warna semula
+            pinIcon.style.color = 'var(--text-secondary)';
             inputPinBtn.setAttribute('title', 'Sematkan Catatan');
         }
     });
 }
 
-// Jalankan aplikasi pertama kali
+// --- BARU: LOGIKA MENANGANI KLIK PALET WARNA FORM INPUT ATAS ---
+const inputPaletteBtn = document.querySelector('.input-container .fa-palette')?.parentElement;
+if (inputPaletteBtn) {
+    // Buat element popover lingkaran warna untuk form atas secara dinamis
+    const inputColorMenu = document.createElement('div');
+    inputColorMenu.className = 'color-popover-menu dropdown-color-section';
+    inputColorMenu.style.position = 'absolute';
+    inputColorMenu.style.display = 'none';
+    inputColorMenu.style.zIndex = '100';
+    
+    colorPalette.forEach(c => {
+        const circle = document.createElement('div');
+        circle.className = 'color-circle';
+        circle.style.backgroundColor = c.value;
+        circle.style.width = '20px';
+        circle.style.height = '20px';
+        circle.style.borderRadius = '50%';
+        circle.style.cursor = 'pointer';
+        circle.style.border = '1px solid rgba(255,255,255,0.2)';
+        circle.setAttribute('title', c.name);
+        
+        circle.addEventListener('click', (e) => {
+            e.stopPropagation();
+            currentInputColor = c.value; // Set warna terpilih
+            inputContainer.style.backgroundColor = c.value; // Ubah background form atas langsung
+            inputColorMenu.style.display = 'none'; // Sembunyikan popover warna kembali
+        });
+        inputColorMenu.appendChild(circle);
+    });
+
+    inputPaletteBtn.style.position = 'relative';
+    inputPaletteBtn.appendChild(inputColorMenu);
+
+    inputPaletteBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const isShown = inputColorMenu.style.display === 'grid';
+        inputColorMenu.style.display = isShown ? 'none' : 'grid';
+        inputColorMenu.style.top = '35px';
+        inputColorMenu.style.left = '0';
+    });
+
+    document.addEventListener('click', () => {
+        inputColorMenu.style.display = 'none';
+    });
+}
+
 fetchNotes();

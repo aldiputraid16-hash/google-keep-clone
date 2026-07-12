@@ -13,20 +13,9 @@ exports.getNotes = async (req, res) => {
 // 2. Menerima data catatan baru 
 exports.createNote = async (req, res) => {
     try {
-        // Ambil title, content, dan is_pinned dari request body frontend
-        const { title, content, is_pinned } = req.body;
-
-        if (!content) {
-            return res.status(400).json({ message: "Konten catatan tidak boleh kosong" });
-        }
-
-        // Amankan nilai pin: jika dari frontend kosong/undefined, otomatis beri nilai 0
-        const pinStatus = is_pinned !== undefined ? is_pinned : 0;
-
-        // Kirim 3 argumen sesuai struktur baru di noteModel.js
-        const insertId = await Note.create(title, content, pinStatus);
-        
-        res.status(201).json({ id: insertId, title, content, is_pinned: pinStatus });
+        const { title, content, is_pinned, color } = req.body;
+        const noteId = await Note.create(title, content, is_pinned, color);
+        res.status(201).json({ message: "Catatan berhasil dibuat", id: noteId });
     } catch (error) {
         res.status(500).json({ error: error.message });
     }
@@ -134,6 +123,30 @@ exports.duplicateNote = async (req, res) => {
         const { id } = req.params;
         const newInsertId = await Note.duplicate(id);
         res.status(201).json({ message: "Salinan catatan berhasil dibuat", id: newInsertId });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+};
+
+// 11. Fitur Baru: Mengubah warna catatan (Update Color)
+exports.changeNoteColor = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { color } = req.body;
+        await Note.updateColor(id, color);
+        res.status(200).json({ message: "Warna catatan berhasil diperbarui", color });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+};
+
+// Mengambil label yang menempel pada suatu catatan khusus
+exports.getNoteLabels = async (req, res) => {
+    try {
+        const { noteId } = req.params;
+        const Label = require('../models/labelModel'); // Import model label
+        const labels = await Label.getLabelsByNote(noteId);
+        res.status(200).json(labels);
     } catch (error) {
         res.status(500).json({ error: error.message });
     }

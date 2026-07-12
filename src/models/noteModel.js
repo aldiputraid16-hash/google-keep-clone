@@ -13,31 +13,30 @@ const Note = {
         return rows;
     },
 
-    // 3. Ambil catatan di sampah (dan otomatis membersihkan data yang > 7 hari)
+    // 3. Ambil catatan di sampah
     getTrashed: async () => {
-        // Otomatis hapus permanen jika di sampah sudah lewat dari 7 hari
         await db.query('DELETE FROM notes WHERE is_trashed = 1 AND updated_at < DATE_SUB(NOW(), INTERVAL 7 DAY)');
-        
-        // Tampilkan sisa catatan sampah yang masih valid
         const [rows] = await db.query('SELECT * FROM notes WHERE is_trashed = 1 ORDER BY id DESC');
         return rows;
     },
 
-    // 4. Menambahkan catatan baru ke database dengan opsi status pin langsung
-    create: async (title, content, is_pinned) => {
+    // 4. Menambahkan catatan baru dengan warna dinamis dari form
+    create: async (title, content, is_pinned, color) => {
+        // Jika form atas tidak mengirim warna, gunakan default Google Keep (#202124)
+        const noteColor = color || '#202124';
         const [result] = await db.query(
-            'INSERT INTO notes (title, content, is_pinned) VALUES (?, ?, ?)', 
-            [title, content, is_pinned]
+            'INSERT INTO notes (title, content, is_pinned, color) VALUES (?, ?, ?, ?)', 
+            [title, content, is_pinned, noteColor]
         );
         return result.insertId;
-    }, // <-- Tanda koma di sini sangat krusial agar fungsi update di bawah tidak eror!
+    },
 
     // 5. MENGEDIT / UPDATE CATATAN
     update: async (id, title, content) => {
         await db.query('UPDATE notes SET title = ?, content = ? WHERE id = ?', [title, content, id]);
     },
 
-    // 6. Mengubah status arsip (toggle 0 atau 1)
+    // 6. Mengubah status arsip
     updateArchiveStatus: async (id, status) => {
         await db.query('UPDATE notes SET is_archived = ?, is_trashed = 0 WHERE id = ?', [status, id]);
     },
@@ -65,23 +64,26 @@ const Note = {
         );
         return result;
     },
-    // 11. Fitur Baru: Menduplikasi Catatan di Database
+
+    // 11. Menduplikasi Catatan (Salinan) beserta warnanya
     duplicate: async (id) => {
-        // Mengambil data catatan asli terlebih dahulu berdasarkan ID
-        const [rows] = await db.query('SELECT title, content, is_pinned, is_archived FROM notes WHERE id = ?', [id]);
+        const [rows] = await db.query('SELECT title, content, is_pinned, is_archived, color FROM notes WHERE id = ?', [id]);
         if (rows.length > 0) {
-            const { title, content, is_pinned, is_archived } = rows[0];
-            // Tambahkan teks tambahan pada judul sebagai penanda salinan (opsional, mirip Google Keep asli)
+            const { title, content, is_pinned, is_archived, color } = rows[0];
             const duplicatedTitle = title ? `${title} (Salinan)` : '';
-            
-            // Masukkan data tersebut sebagai baris catatan baru
             const [result] = await db.query(
-                'INSERT INTO notes (title, content, is_pinned, is_archived) VALUES (?, ?, ?, ?)',
-                [duplicatedTitle, content, is_pinned, is_archived]
+                'INSERT INTO notes (title, content, is_pinned, is_archived, color) VALUES (?, ?, ?, ?, ?)',
+                [duplicatedTitle, content, is_pinned, is_archived, color]
             );
             return result.insertId;
         }
         throw new Error("Catatan asli tidak ditemukan");
+    },
+
+    // 12. FITUR BARU: Mengubah warna background catatan di database
+    updateColor: async (id, color) => {
+        const [result] = await db.query('UPDATE notes SET color = ? WHERE id = ?', [color, id]);
+        return result;
     }
 };
 

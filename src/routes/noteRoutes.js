@@ -34,4 +34,10 @@ router.put('/:id/pin', noteController.togglePinNote);
 
 router.post('/:id/duplicate', noteController.duplicateNote);
 
+// Rute untuk mengubah warna tema catatan
+router.put('/:id/color', noteController.changeNoteColor);
+
+// Tambahkan baris ini di file rute catatan Anda
+router.get('/:noteId/labels', noteController.getNoteLabels);
+
 module.exports = router;

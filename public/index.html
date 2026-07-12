@@ -71,6 +71,25 @@
         <div id="notes-container" class="grid-layout" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 16px;"></div>
     </div>
 </div>
+<div id="label-modal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3>Edit label</h3>
+        </div>
+        <div class="modal-body">
+            <div class="label-input-row">
+                <button id="clear-label-input-btn" title="Batal"><i class="fas fa-times"></i></button>
+                <input type="text" id="new-label-input" placeholder="Buat label baru" maxlength="50">
+                <button id="save-label-btn" title="Buat label"><i class="fas fa-check"></i></button>
+            </div>
+            <div id="modal-labels-list">
+                </div>
+        </div>
+        <div class="modal-footer">
+            <button id="close-label-modal-btn">Selesai</button>
+        </div>
+    </div>
+</div>
 
     <script src="app.js"></script>
 </body>
