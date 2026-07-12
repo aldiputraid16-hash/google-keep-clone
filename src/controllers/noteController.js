@@ -38,13 +38,13 @@ exports.updateNote = async (req, res) => {
         const { id } = req.params;
         const { title, content } = req.body;
 
-        if (!content) {
-            return res.status(400).json({ message: "Konten catatan tidak boleh kosong" });
-        }
-
+        // Jangan batasi konten kosong agar user bisa menghapus teks jika mau
+        // Pastikan model Anda menerima title dan content
         await Note.update(id, title, content);
+        
         res.status(200).json({ message: "Catatan berhasil diperbarui" });
     } catch (error) {
+        console.error("Error updating note:", error); // Tambahkan log untuk debug
         res.status(500).json({ error: error.message });
     }
 };
@@ -152,10 +152,3 @@ exports.getNoteLabels = async (req, res) => {
     }
 };
 
-exports.updateNote = async (req, res) => {
-    try {
-        const { title, content } = req.body;
-        await Note.update(req.params.id, title, content);
-        res.status(200).json({ message: "Catatan berhasil diupdate" });
-    } catch (err) { res.status(500).json({ error: err.message }); }
-};

@@ -146,6 +146,7 @@ function renderNotes(notesList) {
         </div>
     </div>
 `;
+
 // Logika untuk menangkap perubahan teks
 const titleField = noteCard.querySelector('.edit-title');
 const contentField = noteCard.querySelector('.edit-content');
