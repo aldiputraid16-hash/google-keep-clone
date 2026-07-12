@@ -152,15 +152,25 @@ const titleField = noteCard.querySelector('.edit-title');
 const contentField = noteCard.querySelector('.edit-content');
 
 const autoSave = async () => {
-    // Hanya menyimpan jika ada perubahan (opsional)
-    await fetch(`/api/notes/${note.id}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ 
-            title: titleField.innerText, 
-            content: contentField.innerText 
-        })
-    });
+    try {
+        const response = await fetch(`/api/notes/${note.id}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ 
+                title: tF.innerText.trim(), 
+                content: cF.innerText.trim() 
+            })
+        });
+
+        if (response.ok) {
+            console.log("Berhasil menyimpan, menyegarkan data...");
+            fetchNotes(); // <--- INI KUNCI UTAMANYA!
+        } else {
+            console.error("Gagal menyimpan ke server");
+        }
+    } catch (err) { 
+        console.error("Error koneksi:", err); 
+    }
 };
 
 // Event listener "blur" aktif saat pengguna selesai mengetik dan klik di luar area tersebut

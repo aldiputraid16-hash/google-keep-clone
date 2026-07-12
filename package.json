@@ -4,8 +4,8 @@
   "description": "",
   "main": "app.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
+  "test": "jest"
+},
   "repository": {
     "type": "git",
     "url": "git+https://github.com/aldiputraid16-hash/google-keep-clone.git"
@@ -26,6 +26,9 @@
     "mysql2": "^3.22.6"
   },
   "devDependencies": {
-    "nodemon": "^3.1.14"
+    "jest": "^30.4.2",
+    "nodemon": "^3.1.14",
+    "supertest": "^7.2.2"
   }
+  
 }

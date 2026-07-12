@@ -91,4 +91,5 @@ updateReminder: async (id, time) => {
     await db.query('UPDATE notes SET reminder_time = ? WHERE id = ?', [time, id]);
 }
 
+
 module.exports = Note;
