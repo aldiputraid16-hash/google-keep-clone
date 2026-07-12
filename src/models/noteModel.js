@@ -86,5 +86,8 @@ const Note = {
         return result;
     }
 };
+update: async (id, title, content) => {
+    await db.query('UPDATE notes SET title = ?, content = ? WHERE id = ?', [title, content, id]);
+}
 
 module.exports = Note;

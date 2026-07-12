@@ -151,3 +151,11 @@ exports.getNoteLabels = async (req, res) => {
         res.status(500).json({ error: error.message });
     }
 };
+
+exports.updateNote = async (req, res) => {
+    try {
+        const { title, content } = req.body;
+        await Note.update(req.params.id, title, content);
+        res.status(200).json({ message: "Catatan berhasil diupdate" });
+    } catch (err) { res.status(500).json({ error: err.message }); }
+};

@@ -40,4 +40,6 @@ router.put('/:id/color', noteController.changeNoteColor);
 // Tambahkan baris ini di file rute catatan Anda
 router.get('/:noteId/labels', noteController.getNoteLabels);
 
+router.put('/:id', noteController.updateNote);
+
 module.exports = router;

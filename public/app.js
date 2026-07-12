@@ -108,31 +108,63 @@ function renderNotes(notesList) {
                 <div class="dropdown-item trash-btn"><i class="fas fa-trash"></i> Hapus (Ke Sampah)</div>
             `;
         } else {
-            dropdownItems = `
-                ${colorSelectionHTML}
-                <div class="dropdown-item archive-btn"><i class="fas fa-archive"></i> Arsipkan</div>
-                <div class="dropdown-item duplicate-btn"><i class="fas fa-copy"></i> Buat salinan</div>
-                <div class="dropdown-item trash-btn"><i class="fas fa-trash"></i> Hapus (Ke Sampah)</div>
-            `;
-        }
+    dropdownItems = `
+        ${colorSelectionHTML}
+
+        <div class="dropdown-item edit-btn">
+            <i class="fas fa-edit"></i> Edit
+        </div>
+
+        <div class="dropdown-item archive-btn">
+            <i class="fas fa-archive"></i> Arsipkan
+        </div>
+
+        <div class="dropdown-item duplicate-btn">
+            <i class="fas fa-copy"></i> Buat salinan
+        </div>
+
+        <div class="dropdown-item trash-btn">
+            <i class="fas fa-trash"></i> Hapus (Ke Sampah)
+        </div>
+    `;
+}
 
         const pinIconColor = note.is_pinned === 1 ? 'color: var(--accent-color);' : 'color: var(--text-secondary);';
 
         noteCard.innerHTML = `
-            ${trashInfo}
-            <button class="card-pin-btn" title="${note.is_pinned === 1 ? 'Lepas Sematan' : 'Sematkan Catatan'}" style="opacity: ${note.is_pinned === 1 ? '1' : ''};">
-                <i class="fas fa-thumbtack" style="${pinIconColor}"></i>
-            </button>
-            <h3 contenteditable="${currentView === 'Catatan'}" class="edit-title">${note.title || ''}</h3>
-            <p contenteditable="${currentView === 'Catatan'}" class="edit-content">${note.content}</p>
-            
-            <div class="note-card-footer" style="justify-content: flex-end;">
-                <button class="more-options-btn" title="Lainnya"><i class="fas fa-ellipsis-v"></i></button>
-                <div class="custom-dropdown-menu">
-                    ${dropdownItems}
-                </div>
-            </div>
-        `;
+    ${trashInfo}
+    <button class="card-pin-btn" title="${note.is_pinned === 1 ? 'Lepas Sematan' : 'Sematkan Catatan'}" style="opacity: ${note.is_pinned === 1 ? '1' : ''};">
+        <i class="fas fa-thumbtack" style="${pinIconColor}"></i>
+    </button>
+    <h3 contenteditable="true" class="edit-title">${note.title || ''}</h3>
+    <p contenteditable="true" class="edit-content">${note.content}</p>
+    
+    <div class="note-card-footer" style="justify-content: flex-end;">
+        <button class="more-options-btn" title="Lainnya"><i class="fas fa-ellipsis-v"></i></button>
+        <div class="custom-dropdown-menu">
+            ${dropdownItems}
+        </div>
+    </div>
+`;
+// Logika untuk menangkap perubahan teks
+const titleField = noteCard.querySelector('.edit-title');
+const contentField = noteCard.querySelector('.edit-content');
+
+const autoSave = async () => {
+    // Hanya menyimpan jika ada perubahan (opsional)
+    await fetch(`/api/notes/${note.id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+            title: titleField.innerText, 
+            content: contentField.innerText 
+        })
+    });
+};
+
+// Event listener "blur" aktif saat pengguna selesai mengetik dan klik di luar area tersebut
+titleField.addEventListener('blur', autoSave);
+contentField.addEventListener('blur', autoSave);
         
         const pinBtn = noteCard.querySelector('.card-pin-btn');
         if (currentView !== 'Catatan') {
