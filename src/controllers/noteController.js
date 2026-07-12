@@ -127,3 +127,14 @@ exports.togglePinNote = async (req, res) => {
         res.status(500).json({ error: error.message });
     }
 };
+
+// 10. Fitur Baru: Membuat Salinan Catatan (Duplicate)
+exports.duplicateNote = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const newInsertId = await Note.duplicate(id);
+        res.status(201).json({ message: "Salinan catatan berhasil dibuat", id: newInsertId });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+};

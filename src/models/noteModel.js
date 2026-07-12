@@ -64,6 +64,24 @@ const Note = {
             [is_pinned, id]
         );
         return result;
+    },
+    // 11. Fitur Baru: Menduplikasi Catatan di Database
+    duplicate: async (id) => {
+        // Mengambil data catatan asli terlebih dahulu berdasarkan ID
+        const [rows] = await db.query('SELECT title, content, is_pinned, is_archived FROM notes WHERE id = ?', [id]);
+        if (rows.length > 0) {
+            const { title, content, is_pinned, is_archived } = rows[0];
+            // Tambahkan teks tambahan pada judul sebagai penanda salinan (opsional, mirip Google Keep asli)
+            const duplicatedTitle = title ? `${title} (Salinan)` : '';
+            
+            // Masukkan data tersebut sebagai baris catatan baru
+            const [result] = await db.query(
+                'INSERT INTO notes (title, content, is_pinned, is_archived) VALUES (?, ?, ?, ?)',
+                [duplicatedTitle, content, is_pinned, is_archived]
+            );
+            return result.insertId;
+        }
+        throw new Error("Catatan asli tidak ditemukan");
     }
 };
 

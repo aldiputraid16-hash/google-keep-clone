@@ -32,4 +32,6 @@ router.delete('/:id/permanent', noteController.deletePermanently);
 // 10. REVISI UTAMA: Rute Fitur Sematkan Catatan (Pin Note)
 router.put('/:id/pin', noteController.togglePinNote);
 
+router.post('/:id/duplicate', noteController.duplicateNote);
+
 module.exports = router;

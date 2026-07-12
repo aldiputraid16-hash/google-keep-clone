@@ -8,7 +8,7 @@ const inputContainer = document.querySelector('.input-container');
 let allNotes = [];
 let currentView = 'Catatan'; 
 
-// 1. Ambil data catatan dari Backend sesuai halaman yang aktif
+// 1. Mengambil data catatan
 async function fetchNotes() {
     let url = '/api/notes';
     
@@ -32,7 +32,7 @@ async function fetchNotes() {
     }
 }
 
-// 2. Render Catatan ke Layar dengan Fitur Sematkan (Pin) Akurat
+// 2. Render Catatan ke Layar 
 function renderNotes(notesList) {
     const notesContainer = document.getElementById('notes-container');
     const pinnedContainer = document.getElementById('pinned-notes-container');
@@ -73,6 +73,7 @@ function renderNotes(notesList) {
         let trashInfo = '';
         let dropdownItems = '';
 
+        // SINKRONISASI DROPDOWN DENGAN MENU "BUAT SALINAN"
         if (currentView === 'Sampah') {
             trashInfo = `<div class="trash-time-info"><i class="far fa-clock"></i> 7 hari lagi</div>`;
             dropdownItems = `
@@ -82,11 +83,13 @@ function renderNotes(notesList) {
         } else if (currentView === 'Arsipkan') {
             dropdownItems = `
                 <div class="dropdown-item unarchive-btn"><i class="fas fa-upload"></i> Pindahkan ke Catatan</div>
+                <div class="dropdown-item duplicate-btn"><i class="fas fa-copy"></i> Buat salinan</div>
                 <div class="dropdown-item trash-btn"><i class="fas fa-trash"></i> Hapus (Ke Sampah)</div>
             `;
         } else {
             dropdownItems = `
                 <div class="dropdown-item archive-btn"><i class="fas fa-archive"></i> Arsipkan</div>
+                <div class="dropdown-item duplicate-btn"><i class="fas fa-copy"></i> Buat salinan</div>
                 <div class="dropdown-item trash-btn"><i class="fas fa-trash"></i> Hapus (Ke Sampah)</div>
             `;
         }
@@ -212,6 +215,21 @@ function renderNotes(notesList) {
                 fetchNotes();
             });
         }
+
+        // Logika Klik untuk menduplikasi Catatan (Buat salinan)
+        const duplicateBtn = noteCard.querySelector('.duplicate-btn');
+        if (duplicateBtn) {
+            duplicateBtn.addEventListener('click', async () => {
+                try {
+                    await fetch(`/api/notes/${note.id}/duplicate`, {
+                        method: 'POST'
+                    });
+                    fetchNotes(); // Reload layar agar salinan langsung muncul
+                } catch (error) {
+                    console.error("Gagal menduplikasi catatan:", error);
+                }
+            });
+        }
         
         // Masukkan kartu ke section yang tepat (Pinned vs Others)
         if (note.is_pinned === 1 && currentView === 'Catatan') {
@@ -221,6 +239,7 @@ function renderNotes(notesList) {
         }
     });
 }
+
 // 3. Tambah Catatan Baru
 async function addNote() {
     const title = noteTitle.value.trim();
@@ -239,7 +258,7 @@ async function addNote() {
             body: JSON.stringify({ 
                 title: title, 
                 content: content,
-                is_pinned: isInputPinned // <-- Kirim status pin aktif dari form atas ke backend
+                is_pinned: isInputPinned // Kirim status pin aktif dari form atas ke backend
             })
         });
         
@@ -250,7 +269,7 @@ async function addNote() {
     }
 }
 
-// Fungsi pembantu untuk mereset tampilan form input atas ke semula
+// Fungsi membantu untuk mereset tampilan form input atas ke semula
 function resetInputForm() {
     noteTitle.value = '';
     noteContent.value = '';
@@ -260,6 +279,7 @@ function resetInputForm() {
         if (pinIcon) pinIcon.style.color = 'var(--text-secondary)';
     }
 }
+
 // 4. Fitur Pencarian Real-Time
 searchBar.addEventListener('input', (e) => {
     const keyword = e.target.value.toLowerCase();
