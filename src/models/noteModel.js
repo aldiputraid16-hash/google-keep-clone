@@ -23,11 +23,14 @@ const Note = {
         return rows;
     },
 
-    // 4. Menambahkan catatan baru ke database
-    create: async (title, content) => {
-        const [result] = await db.query('INSERT INTO notes (title, content) VALUES (?, ?)', [title, content]);
+    // 4. Menambahkan catatan baru ke database dengan opsi status pin langsung
+    create: async (title, content, is_pinned) => {
+        const [result] = await db.query(
+            'INSERT INTO notes (title, content, is_pinned) VALUES (?, ?, ?)', 
+            [title, content, is_pinned]
+        );
         return result.insertId;
-    },
+    }, // <-- Tanda koma di sini sangat krusial agar fungsi update di bawah tidak eror!
 
     // 5. MENGEDIT / UPDATE CATATAN
     update: async (id, title, content) => {
@@ -52,6 +55,15 @@ const Note = {
     // 9. Menghapus permanen dari database
     deletePermanently: async (id) => {
         await db.query('DELETE FROM notes WHERE id = ?', [id]);
+    },
+
+    // 10. Mengubah status sematan (Pin)
+    updatePinStatus: async (id, is_pinned) => {
+        const [result] = await db.query(
+            'UPDATE notes SET is_pinned = ?, updated_at = NOW() WHERE id = ?',
+            [is_pinned, id]
+        );
+        return result;
     }
 };
 

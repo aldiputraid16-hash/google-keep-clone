@@ -32,23 +32,47 @@ async function fetchNotes() {
     }
 }
 
-// 2. Render Catatan ke Layar dengan Dropdown Menu Titik Tiga
+// 2. Render Catatan ke Layar dengan Fitur Sematkan (Pin) Akurat
 function renderNotes(notesList) {
+    const notesContainer = document.getElementById('notes-container');
+    const pinnedContainer = document.getElementById('pinned-notes-container');
+    const pinnedSection = document.getElementById('pinned-section');
+    const othersTitle = document.getElementById('others-title');
+    
+    // Reset isi container
     notesContainer.innerHTML = '';
+    if (pinnedContainer) pinnedContainer.innerHTML = '';
     
     if (notesList.length === 0) {
+        if (pinnedSection) pinnedSection.style.display = 'none';
+        if (othersTitle) othersTitle.style.display = 'none';
         notesContainer.innerHTML = `<p style="color: var(--text-secondary); text-align: center; width: 100%; margin-top: 20px;">Tidak ada catatan di sini.</p>`;
         return;
+    }
+    
+    // Cek apakah ada catatan yang disematkan (is_pinned === 1)
+    const hasPinned = notesList.some(note => note.is_pinned === 1 && currentView === 'Catatan');
+    
+    if (hasPinned) {
+        if (pinnedSection) pinnedSection.style.display = 'block';
+        if (othersTitle) othersTitle.style.display = 'block';
+    } else {
+        if (pinnedSection) pinnedSection.style.display = 'none';
+        if (othersTitle) othersTitle.style.display = 'none';
     }
     
     notesList.forEach((note) => {
         const noteCard = document.createElement('div');
         noteCard.classList.add('note-card');
         
+        // Tandai class jika kartu ini disematkan
+        if (note.is_pinned === 1 && currentView === 'Catatan') {
+            noteCard.classList.add('pinned');
+        }
+        
         let trashInfo = '';
         let dropdownItems = '';
 
-        // Tentukan isi menu dropdown berdasarkan halaman aktif
         if (currentView === 'Sampah') {
             trashInfo = `<div class="trash-time-info"><i class="far fa-clock"></i> 7 hari lagi</div>`;
             dropdownItems = `
@@ -67,9 +91,14 @@ function renderNotes(notesList) {
             `;
         }
 
+        // Ikon pin berubah warna aktif jika is_pinned bernilai 1
+        const pinIconColor = note.is_pinned === 1 ? 'color: var(--accent-color);' : 'color: var(--text-secondary);';
+
         noteCard.innerHTML = `
             ${trashInfo}
-            <button class="card-pin-btn" title="Sematkan"><i class="fas fa-thumbtack"></i></button>
+            <button class="card-pin-btn" title="${note.is_pinned === 1 ? 'Lepas Sematan' : 'Sematkan Catatan'}" style="opacity: ${note.is_pinned === 1 ? '1' : ''};">
+                <i class="fas fa-thumbtack" style="${pinIconColor}"></i>
+            </button>
             <h3 contenteditable="${currentView === 'Catatan'}" class="edit-title">${note.title || ''}</h3>
             <p contenteditable="${currentView === 'Catatan'}" class="edit-content">${note.content}</p>
             
@@ -80,6 +109,30 @@ function renderNotes(notesList) {
                 </div>
             </div>
         `;
+        
+        // --- LOGIKA TOMBOL PIN (SEMATKAN) ---
+        const pinBtn = noteCard.querySelector('.card-pin-btn');
+        if (currentView !== 'Catatan') {
+            if (pinBtn) pinBtn.style.display = 'none'; // Sembunyikan tombol pin jika di menu Sampah/Arsip
+        } else {
+            if (pinBtn) {
+                pinBtn.addEventListener('click', async (e) => {
+                    e.stopPropagation();
+                    const nextPinnedStatus = note.is_pinned === 1 ? 0 : 1;
+                    
+                    try {
+                        await fetch(`/api/notes/${note.id}/pin`, {
+                            method: 'PUT',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ is_pinned: nextPinnedStatus })
+                        });
+                        fetchNotes(); // Reload layout catatan
+                    } catch (err) {
+                        console.error("Gagal mengubah status pin:", err);
+                    }
+                });
+            }
+        }
         
         // --- LOGIKA AUTO SAVE ON BLUR ---
         if (currentView === 'Catatan') {
@@ -99,7 +152,7 @@ function renderNotes(notesList) {
             contentField.addEventListener('blur', autoSave);
         }
         
-        // --- LOGIKA MUNCULKAN / SEMBUNYIKAN DROPDOWN ---
+        // --- LOGIKA DROPDOWN MENU ---
         const moreBtn = noteCard.querySelector('.more-options-btn');
         const dropdown = noteCard.querySelector('.custom-dropdown-menu');
         
@@ -111,9 +164,7 @@ function renderNotes(notesList) {
             dropdown.classList.toggle('show');
         });
 
-        // --- EVENT HANDLER UNTUK TOMBOL DI DALAM DROPDOWN ---
-        
-        // Tombol Arsipkan
+        // --- HANDLER TOMBOL DROPDOWN ---
         const archiveBtn = noteCard.querySelector('.archive-btn');
         if (archiveBtn) {
             archiveBtn.addEventListener('click', async () => {
@@ -126,7 +177,6 @@ function renderNotes(notesList) {
             });
         }
 
-        // Tombol Kembalikan dari Arsip
         const unarchiveBtn = noteCard.querySelector('.unarchive-btn');
         if (unarchiveBtn) {
             unarchiveBtn.addEventListener('click', async () => {
@@ -139,7 +189,6 @@ function renderNotes(notesList) {
             });
         }
 
-        // Tombol Buang ke Sampah (Soft Delete)
         const trashBtn = noteCard.querySelector('.trash-btn');
         if (trashBtn) {
             trashBtn.addEventListener('click', async () => {
@@ -148,7 +197,6 @@ function renderNotes(notesList) {
             });
         }
 
-        // Tombol Pulihkan dari Sampah
         const restoreBtn = noteCard.querySelector('.restore-btn');
         if (restoreBtn) {
             restoreBtn.addEventListener('click', async () => {
@@ -157,7 +205,6 @@ function renderNotes(notesList) {
             });
         }
 
-        // Tombol Hapus Permanen (Tanpa Pop-Up)
         const deletePermBtn = noteCard.querySelector('.delete-perm-btn');
         if (deletePermBtn) {
             deletePermBtn.addEventListener('click', async () => {
@@ -166,15 +213,14 @@ function renderNotes(notesList) {
             });
         }
         
-        notesContainer.appendChild(noteCard);
+        // Masukkan kartu ke section yang tepat (Pinned vs Others)
+        if (note.is_pinned === 1 && currentView === 'Catatan') {
+            if (pinnedContainer) pinnedContainer.appendChild(noteCard);
+        } else {
+            notesContainer.appendChild(noteCard);
+        }
     });
 }
-
-// Tutup dropdown jika klik di luar kartu
-document.addEventListener('click', () => {
-    document.querySelectorAll('.custom-dropdown-menu').forEach(d => d.classList.remove('show'));
-});
-
 // 3. Tambah Catatan Baru
 async function addNote() {
     const title = noteTitle.value.trim();
@@ -182,8 +228,7 @@ async function addNote() {
 
     // Jika kosong dua-duanya, abaikan proses simpan
     if (title === "" && content === "") {
-        noteTitle.value = '';
-        noteContent.value = '';
+        resetInputForm(); // Bersihkan form
         return;
     }
 
@@ -191,18 +236,30 @@ async function addNote() {
         await fetch('/api/notes', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ title, content })
+            body: JSON.stringify({ 
+                title: title, 
+                content: content,
+                is_pinned: isInputPinned // <-- Kirim status pin aktif dari form atas ke backend
+            })
         });
         
-        // Reset form input setelah berhasil disimpan
-        noteTitle.value = '';
-        noteContent.value = '';
+        resetInputForm(); // Reset form dan warna pin setelah sukses menyimpan
         fetchNotes(); 
     } catch (error) {
         console.error("Gagal menambah catatan:", error);
     }
 }
 
+// Fungsi pembantu untuk mereset tampilan form input atas ke semula
+function resetInputForm() {
+    noteTitle.value = '';
+    noteContent.value = '';
+    isInputPinned = 0;
+    if (inputPinBtn) {
+        const pinIcon = inputPinBtn.querySelector('i');
+        if (pinIcon) pinIcon.style.color = 'var(--text-secondary)';
+    }
+}
 // 4. Fitur Pencarian Real-Time
 searchBar.addEventListener('input', (e) => {
     const keyword = e.target.value.toLowerCase();
@@ -244,6 +301,29 @@ document.addEventListener('click', (e) => {
         addNote();
     }
 });
+
+// --- LOGIKA TOMBOL PIN PADA FORM INPUT UTAMA (ATAS) ---
+let isInputPinned = 0; // 0 = tidak disematkan, 1 = disematkan
+const inputPinBtn = document.querySelector('.pin-btn-input');
+
+if (inputPinBtn) {
+    inputPinBtn.addEventListener('click', (e) => {
+        e.stopPropagation(); // Mencegah form tertutup otomatis
+        
+        // Toggle status pin (0 jadi 1, 1 jadi 0)
+        isInputPinned = isInputPinned === 0 ? 1 : 0;
+        
+        // Ubah warna ikon paku payung sesuai status aktif
+        const pinIcon = inputPinBtn.querySelector('i');
+        if (isInputPinned === 1) {
+            pinIcon.style.color = 'var(--accent-color)'; // Berubah jadi Kuning Google Keep
+            inputPinBtn.setAttribute('title', 'Lepas Sematan');
+        } else {
+            pinIcon.style.color = 'var(--text-secondary)'; // Kembali ke warna semula
+            inputPinBtn.setAttribute('title', 'Sematkan Catatan');
+        }
+    });
+}
 
 // Jalankan aplikasi pertama kali
 fetchNotes();

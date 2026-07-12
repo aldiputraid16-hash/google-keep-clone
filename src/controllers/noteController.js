@@ -10,17 +10,23 @@ exports.getNotes = async (req, res) => {
     }
 };
 
-// 2. Menerima data catatan baru dari frontend dan menyimpannya
+// 2. Menerima data catatan baru 
 exports.createNote = async (req, res) => {
     try {
-        const { title, content } = req.body;
+        // Ambil title, content, dan is_pinned dari request body frontend
+        const { title, content, is_pinned } = req.body;
 
         if (!content) {
             return res.status(400).json({ message: "Konten catatan tidak boleh kosong" });
         }
 
-        const insertId = await Note.create(title, content);
-        res.status(201).json({ id: insertId, title, content });
+        // Amankan nilai pin: jika dari frontend kosong/undefined, otomatis beri nilai 0
+        const pinStatus = is_pinned !== undefined ? is_pinned : 0;
+
+        // Kirim 3 argumen sesuai struktur baru di noteModel.js
+        const insertId = await Note.create(title, content, pinStatus);
+        
+        res.status(201).json({ id: insertId, title, content, is_pinned: pinStatus });
     } catch (error) {
         res.status(500).json({ error: error.message });
     }
@@ -103,6 +109,20 @@ exports.deletePermanently = async (req, res) => {
         const { id } = req.params;
         await Note.deletePermanently(id);
         res.status(200).json({ message: "Catatan dihapus permanen dari database" });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+};
+/// Fungsi untuk mengubah status sematan (Pin) catatan
+exports.togglePinNote = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { is_pinned } = req.body; // Menerima nilai 1 atau 0 dari frontend
+
+        // Memanggil method dari model Note (Bukan db.query langsung)
+        await Note.updatePinStatus(id, is_pinned);
+        
+        res.status(200).json({ message: "Status sematan catatan berhasil diperbarui" });
     } catch (error) {
         res.status(500).json({ error: error.message });
     }
