@@ -7,10 +7,9 @@ const inputContainer = document.querySelector('.input-container');
 
 let allNotes = [];
 let currentView = 'Catatan'; 
-let isInputPinned = 0; // 0 = tidak disematkan, 1 = disematkan
-let currentInputColor = '#202124'; // Menyimpan state warna form input atas
+let isInputPinned = 0; 
+let currentInputColor = '#202124'; 
 
-// Pilihan warna otentik Google Keep Dark Mode
 const colorPalette = [
     { name: 'Default', value: '#202124' },
     { name: 'Merah Tua', value: '#5c2b29' },
@@ -146,8 +145,6 @@ function renderNotes(notesList) {
         </div>
     </div>
 `;
-
-// Logika untuk menangkap perubahan teks
 const titleField = noteCard.querySelector('.edit-title');
 const contentField = noteCard.querySelector('.edit-content');
 
@@ -164,7 +161,7 @@ const autoSave = async () => {
 
         if (response.ok) {
             console.log("Berhasil menyimpan, menyegarkan data...");
-            fetchNotes(); // <--- INI KUNCI UTAMANYA!
+            fetchNotes(); 
         } else {
             console.error("Gagal menyimpan ke server");
         }
@@ -173,7 +170,6 @@ const autoSave = async () => {
     }
 };
 
-// Event listener "blur" aktif saat pengguna selesai mengetik dan klik di luar area tersebut
 titleField.addEventListener('blur', autoSave);
 contentField.addEventListener('blur', autoSave);
         
@@ -312,7 +308,6 @@ contentField.addEventListener('blur', autoSave);
     });
 }
 
-// SIMPAN CATATAN BESERTA WARNA DARI INPUT FORM ATAS
 async function addNote() {
     const title = noteTitle.value.trim();
     const content = noteContent.value.trim();
@@ -330,7 +325,7 @@ async function addNote() {
                 title: title, 
                 content: content,
                 is_pinned: isInputPinned,
-                color: currentInputColor // Kirim warna yang sedang aktif di form atas
+                color: currentInputColor
             })
         });
         resetInputForm();
@@ -344,8 +339,8 @@ function resetInputForm() {
     noteTitle.value = '';
     noteContent.value = '';
     isInputPinned = 0;
-    currentInputColor = '#202124'; // Reset warna state ke default
-    if (inputContainer) inputContainer.style.backgroundColor = '#202124'; // Reset warna visual form
+    currentInputColor = '#202124'; 
+    if (inputContainer) inputContainer.style.backgroundColor = '#202124'; 
     if (inputPinBtn) {
         const pinIcon = inputPinBtn.querySelector('i');
         if (pinIcon) pinIcon.style.color = 'var(--text-secondary)';
@@ -403,10 +398,9 @@ if (inputPinBtn) {
     });
 }
 
-// --- BARU: LOGIKA MENANGANI KLIK PALET WARNA FORM INPUT ATAS ---
 const inputPaletteBtn = document.querySelector('.input-container .fa-palette')?.parentElement;
 if (inputPaletteBtn) {
-    // Buat element popover lingkaran warna untuk form atas secara dinamis
+
     const inputColorMenu = document.createElement('div');
     inputColorMenu.className = 'color-popover-menu dropdown-color-section';
     inputColorMenu.style.position = 'absolute';
@@ -426,9 +420,9 @@ if (inputPaletteBtn) {
         
         circle.addEventListener('click', (e) => {
             e.stopPropagation();
-            currentInputColor = c.value; // Set warna terpilih
-            inputContainer.style.backgroundColor = c.value; // Ubah background form atas langsung
-            inputColorMenu.style.display = 'none'; // Sembunyikan popover warna kembali
+            currentInputColor = c.value; 
+            inputContainer.style.backgroundColor = c.value; 
+            inputColorMenu.style.display = 'none'; 
         });
         inputColorMenu.appendChild(circle);
     });

@@ -6,7 +6,6 @@ router.get('/', labelController.getAllLabels);
 router.post('/', labelController.createLabel);    
 router.delete('/:id', labelController.deleteLabel); 
 
-// Rute untuk hubungan Label ke Catatan
 router.get('/note/:noteId', labelController.getLabelsByNote);
 router.post('/note/:noteId', labelController.addLabelToNote);
 router.delete('/note/:noteId', labelController.removeLabelFromNote);

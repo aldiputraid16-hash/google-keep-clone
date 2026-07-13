@@ -143,7 +143,7 @@ body {
 .app-layout {
     display: flex;
     position: relative;
-    padding-top: 64px; /* Solusi utama penahan agar konten tidak naik ke atas navbar */
+    padding-top: 64px; 
     height: 100vh;
 }
 
@@ -153,7 +153,7 @@ body {
     background: var(--bg-primary);
     border-right: 1px solid var(--border-color);
     height: calc(100vh - 64px);
-    position: fixed; /* Menjaga sidebar tetap di tempat saat di-scroll */
+    position: fixed; 
     left: 0;
 }
 
@@ -165,7 +165,7 @@ body {
     display: flex;
     flex-direction: column;
     align-items: center;
-    margin-left: var(--sidebar-width); /* Memberi ruang di samping kanan sidebar */
+    margin-left: var(--sidebar-width); 
     min-height: calc(100vh - 64px);
 }
 
@@ -444,7 +444,7 @@ body {
     margin-bottom: 10px;
 }
 
-/* Styling Grid Pilihan Warna di dalam Dropdown Titik Tiga */
+
 .dropdown-color-section {
     display: grid;
     grid-template-columns: repeat(5, 1fr);
@@ -469,7 +469,7 @@ body {
     border-color: #fff;
 }
 
-/* --- STYLING MODAL EDIT LABEL --- */
+
 .modal {
     display: none; 
     position: fixed; 
@@ -564,7 +564,7 @@ body {
     background-color: rgba(255,255,255,0.05);
 }
 
-/* Badge Label di Bawah Catatan */
+
 .note-labels-badges {
     display: flex;
     flex-wrap: wrap;

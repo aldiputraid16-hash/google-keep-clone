@@ -1,6 +1,5 @@
 const Note = require('../models/noteModel');
 
-// 1. Mengambil semua catatan biasa (is_archived=0, is_trashed=0)
 exports.getNotes = async (req, res) => {
     try {
         const notes = await Note.getAll();
@@ -10,7 +9,6 @@ exports.getNotes = async (req, res) => {
     }
 };
 
-// 2. Menerima data catatan baru 
 exports.createNote = async (req, res) => {
     try {
         const { title, content, is_pinned, color } = req.body;
@@ -21,7 +19,6 @@ exports.createNote = async (req, res) => {
     }
 };
 
-// 3. Mengubah fungsi delete biasa menjadi SOFT DELETE (Pindah ke Sampah)
 exports.deleteNote = async (req, res) => {
     try {
         const { id } = req.params;
@@ -32,24 +29,20 @@ exports.deleteNote = async (req, res) => {
     }
 };
 
-// 4. Menerima data perubahan catatan dari frontend berdasarkan ID
 exports.updateNote = async (req, res) => {
     try {
         const { id } = req.params;
         const { title, content } = req.body;
 
-        // Jangan batasi konten kosong agar user bisa menghapus teks jika mau
-        // Pastikan model Anda menerima title dan content
         await Note.update(id, title, content);
         
         res.status(200).json({ message: "Catatan berhasil diperbarui" });
     } catch (error) {
-        console.error("Error updating note:", error); // Tambahkan log untuk debug
+        console.error("Error updating note:", error); 
         res.status(500).json({ error: error.message });
     }
 };
 
-// 5. Mengambil catatan yang statusnya diarsip
 exports.getArchivedNotes = async (req, res) => {
     try {
         const notes = await Note.getArchived();
@@ -59,7 +52,6 @@ exports.getArchivedNotes = async (req, res) => {
     }
 };
 
-// 6. Mengambil catatan yang statusnya di sampah
 exports.getTrashedNotes = async (req, res) => {
     try {
         const notes = await Note.getTrashed();
@@ -69,7 +61,6 @@ exports.getTrashedNotes = async (req, res) => {
     }
 };
 
-// 7. Mengarsipkan atau mengembalikan catatan dari arsip
 exports.toggleArchive = async (req, res) => {
     try {
         const { id } = req.params;
@@ -81,7 +72,6 @@ exports.toggleArchive = async (req, res) => {
     }
 };
 
-// 8. Memulihkan catatan kembali dari sampah (TAMBAHAN UTAMA)
 exports.restoreFromTrash = async (req, res) => {
     try {
         const { id } = req.params;
@@ -92,7 +82,6 @@ exports.restoreFromTrash = async (req, res) => {
     }
 };
 
-// 9. Hapus Permanen (Dipanggil saat berada di menu Sampah)
 exports.deletePermanently = async (req, res) => {
     try {
         const { id } = req.params;
@@ -102,13 +91,12 @@ exports.deletePermanently = async (req, res) => {
         res.status(500).json({ error: error.message });
     }
 };
-/// Fungsi untuk mengubah status sematan (Pin) catatan
+
 exports.togglePinNote = async (req, res) => {
     try {
         const { id } = req.params;
-        const { is_pinned } = req.body; // Menerima nilai 1 atau 0 dari frontend
+        const { is_pinned } = req.body; 
 
-        // Memanggil method dari model Note (Bukan db.query langsung)
         await Note.updatePinStatus(id, is_pinned);
         
         res.status(200).json({ message: "Status sematan catatan berhasil diperbarui" });
@@ -117,7 +105,6 @@ exports.togglePinNote = async (req, res) => {
     }
 };
 
-// 10. Fitur Baru: Membuat Salinan Catatan (Duplicate)
 exports.duplicateNote = async (req, res) => {
     try {
         const { id } = req.params;
@@ -128,7 +115,6 @@ exports.duplicateNote = async (req, res) => {
     }
 };
 
-// 11. Fitur Baru: Mengubah warna catatan (Update Color)
 exports.changeNoteColor = async (req, res) => {
     try {
         const { id } = req.params;
@@ -140,11 +126,10 @@ exports.changeNoteColor = async (req, res) => {
     }
 };
 
-// Mengambil label yang menempel pada suatu catatan khusus
 exports.getNoteLabels = async (req, res) => {
     try {
         const { noteId } = req.params;
-        const Label = require('../models/labelModel'); // Import model label
+        const Label = require('../models/labelModel'); 
         const labels = await Label.getLabelsByNote(noteId);
         res.status(200).json(labels);
     } catch (error) {
@@ -156,7 +141,7 @@ exports.setReminder = async (req, res) => {
     try {
         const { id } = req.params;
         const { reminder_time } = req.body;
-        // Panggil fungsi di model (asumsi Anda sudah buat updateReminder di model)
+        
         await Note.updateReminder(id, reminder_time);
         res.status(200).json({ message: "Pengingat tersimpan" });
     } catch (error) {

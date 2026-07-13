@@ -8,7 +8,7 @@ jest.mock('../src/models/noteModel');
 const app = express();
 app.use(express.json());
 
-// Daftarkan semua route yang ada di noteController
+
 app.get('/api/notes', noteController.getNotes);
 app.post('/api/notes', noteController.createNote);
 app.delete('/api/notes/:id', noteController.deleteNote);
@@ -59,7 +59,7 @@ describe('Note Controller Full Coverage Test', () => {
         expect(res.statusCode).toBe(201);
     });
 
-    // TEST ERROR HANDLING (Untuk menaikkan % Branch)
+  
     it('seharusnya menangani error 500 pada setiap fungsi', async () => {
         Note.getAll.mockRejectedValue(new Error('DB Error'));
         const res = await request(app).get('/api/notes');

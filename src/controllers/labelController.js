@@ -1,8 +1,5 @@
 const Label = require('../models/labelModel');
 
-// --- CRUD Label Utama ---
-
-// 1. Mengambil semua label
 exports.getAllLabels = async (req, res) => {
     try {
         const labels = await Label.getAll();
@@ -12,7 +9,6 @@ exports.getAllLabels = async (req, res) => {
     }
 };
 
-// 2. Membuat label baru
 exports.createLabel = async (req, res) => {
     try {
         const { name } = req.body;
@@ -24,7 +20,6 @@ exports.createLabel = async (req, res) => {
     }
 };
 
-// 3. Menghapus label berdasarkan ID
 exports.deleteLabel = async (req, res) => {
     try {
         const { id } = req.params;
@@ -35,9 +30,6 @@ exports.deleteLabel = async (req, res) => {
     }
 };
 
-// --- TAMBAHAN: Menghubungkan Label ke Catatan ---
-
-// 4. Ambil semua label yang terpasang di satu catatan tertentu
 exports.getLabelsByNote = async (req, res) => {
     try {
         const labels = await Label.getByNote(req.params.noteId);
@@ -47,7 +39,6 @@ exports.getLabelsByNote = async (req, res) => {
     }
 };
 
-// 5. Tambahkan label ke catatan
 exports.addLabelToNote = async (req, res) => {
     try {
         const { labelId } = req.body;
@@ -58,7 +49,6 @@ exports.addLabelToNote = async (req, res) => {
     }
 };
 
-// 6. Hapus label dari catatan
 exports.removeLabelFromNote = async (req, res) => {
     try {
         const { labelId } = req.body;
