@@ -4,7 +4,7 @@
   "description": "",
   "main": "app.js",
   "scripts": {
-  "test": "jest"
+  "test": "jest --coverage --detectOpenHandles"
 },
   "repository": {
     "type": "git",
@@ -32,3 +32,4 @@
   }
   
 }
+
